@@ -1,0 +1,7 @@
+{
+  "name": "WhereIsIt - 위치 기억 도우미 V0.1",
+  "description": "중요한 물건이나 정보의 위치를 기록하고 검색하여 기억의 부하를 줄여주는 개인 자산 위치 관리 애플리케이션입니다.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
