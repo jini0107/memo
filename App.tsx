@@ -300,37 +300,38 @@ const App: React.FC = () => {
       <div className="flex flex-col items-center">
         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
         <canvas ref={canvasRef} className="hidden" />
-        <div className="w-full grid grid-cols-2 gap-3 mb-2">
+        <div className="w-full grid grid-cols-2 gap-4 mb-4">
           {[0, 1].map((idx) => (
-            <div key={idx} className="aspect-square rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group transition-all hover:border-indigo-300">
+            <div key={idx} className="aspect-square rounded-[2.5rem] bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group transition-all hover:border-brand-300 hover:bg-brand-50/30">
               {isCameraActive && activeCameraSlot === idx ? (
                 <div className="w-full h-full relative">
                   <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-                  <button type="button" onClick={capturePhoto} className="absolute bottom-3 left-1/2 -translate-x-1/2 w-10 h-10 bg-white/40 backdrop-blur-md rounded-full border-2 border-white flex items-center justify-center active:scale-90 shadow-lg">
-                    <div className="w-6 h-6 bg-white rounded-full"></div>
+                  <div className="absolute inset-0 bg-black/20"></div>
+                  <button type="button" onClick={capturePhoto} className="absolute bottom-4 left-1/2 -translate-x-1/2 w-14 h-14 bg-white/40 backdrop-blur-xl rounded-full border-4 border-white flex items-center justify-center active:scale-90 shadow-2xl transition-all">
+                    <div className="w-8 h-8 bg-white rounded-full shadow-inner"></div>
                   </button>
-                  <button type="button" onClick={stopCamera} className="absolute top-2 right-2 bg-black/40 text-white w-6 h-6 rounded-full flex items-center justify-center backdrop-blur-sm text-[10px]">
+                  <button type="button" onClick={stopCamera} className="absolute top-3 right-3 bg-black/60 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md text-xs">
                     <i className="fas fa-times"></i>
                   </button>
                 </div>
               ) : itemImages[idx] ? (
                 <div className="w-full h-full relative group">
                   <img src={itemImages[idx]} className="w-full h-full object-cover" alt={idx === 0 ? '기억물품' : '수납장소'} />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-[2px]">
-                    <button type="button" onClick={() => removeImage(idx)} className="bg-red-500 text-white px-3 py-1.5 rounded-xl text-[10px] font-bold shadow-xl">삭제</button>
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all backdrop-blur-[4px]">
+                    <button type="button" onClick={() => removeImage(idx)} className="bg-red-500 text-white px-4 py-2 rounded-2xl text-[11px] font-black shadow-2xl tracking-tight">이미지 삭제</button>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => startCamera(idx)} className="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center hover:border-indigo-400">
-                      <i className="fas fa-camera text-indigo-500 text-sm"></i>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex gap-2.5">
+                    <button type="button" onClick={() => startCamera(idx)} className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center hover:border-brand-400 hover:text-brand-600 transition-all">
+                      <i className="fas fa-camera text-gray-400 text-lg"></i>
                     </button>
-                    <button type="button" onClick={() => { setActiveCameraSlot(idx); fileInputRef.current?.click(); }} className="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center hover:border-emerald-400">
-                      <i className="fas fa-images text-emerald-500 text-sm"></i>
+                    <button type="button" onClick={() => { setActiveCameraSlot(idx); fileInputRef.current?.click(); }} className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center hover:border-emerald-400 hover:text-emerald-600 transition-all">
+                      <i className="fas fa-images text-gray-400 text-lg"></i>
                     </button>
                   </div>
-                  <span className="text-[9px] font-bold text-gray-400">{idx === 0 ? '기억물품' : '수납장소'}</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{idx === 0 ? '물건 사진' : '공간 사진'}</span>
                 </div>
               )}
             </div>
@@ -339,20 +340,29 @@ const App: React.FC = () => {
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-gray-400 mb-1.5 ml-1">물건 이름</label>
-        <div className="flex gap-2">
-          <input required type="text" className="flex-1 p-3.5 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 border border-gray-100" placeholder="예: 여권, 보조 배터리" value={itemName} onChange={(e) => setItemName(e.target.value)} />
-          <button type="button" disabled className="px-5 bg-indigo-100 text-indigo-400 rounded-2xl text-xs font-bold disabled:opacity-50 whitespace-nowrap hidden">
-            AI
-          </button>
+        <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">물건 이름</label>
+        <div className="relative">
+          <input
+            required
+            type="text"
+            className="w-full p-4 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 font-bold placeholder:font-medium transition-all"
+            placeholder="여권, 외장하드, 비상금 등"
+            value={itemName}
+            onChange={(e) => setItemName(e.target.value)}
+          />
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <button type="button" disabled className="w-8 h-8 brand-gradient text-white rounded-xl text-[10px] items-center justify-center hidden">
+              <i className="fas fa-magic"></i>
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold text-gray-400 mb-1.5 ml-1">보관 장소 (구분)</label>
+          <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">장소 구분</label>
           <select
-            className="w-full p-3.5 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 border border-gray-100"
+            className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
             value={locType}
             onChange={(e) => {
               const newType = e.target.value;
@@ -372,113 +382,114 @@ const App: React.FC = () => {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-bold text-gray-400 mb-1.5 ml-1">상세 장소</label>
-          {locType === '집' ? (
-            <select
-              className="w-full p-3.5 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 border border-gray-100"
-              value={locDetail}
-              onChange={(e) => setLocDetail(e.target.value)}
-            >
-              {configHomeLocs.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-            </select>
-          ) : locType === '사무실' ? (
-            <select
-              className="w-full p-3.5 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 border border-gray-100"
-              value={locDetail}
-              onChange={(e) => setLocDetail(e.target.value)}
-            >
-              {configOfficeLocs.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-            </select>
-          ) : locType === '디지털저장소' ? (
-            <select
-              className="w-full p-3.5 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 border border-gray-100"
-              value={locDetail}
-              onChange={(e) => setLocDetail(e.target.value)}
-            >
-              {configDigitalLocs.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-            </select>
-          ) : (
-            <input
-              type="text"
-              className="w-full p-3.5 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 border border-gray-100"
-              placeholder="상세 장소 입력"
-              value={locDetail}
-              onChange={(e) => setLocDetail(e.target.value)}
-              required
-            />
-          )}
+          <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">상세 위치</label>
+          <div className="relative">
+            {locType === '집' ? (
+              <select
+                className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
+                value={locDetail}
+                onChange={(e) => setLocDetail(e.target.value)}
+              >
+                {configHomeLocs.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+              </select>
+            ) : locType === '사무실' ? (
+              <select
+                className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
+                value={locDetail}
+                onChange={(e) => setLocDetail(e.target.value)}
+              >
+                {configOfficeLocs.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+              </select>
+            ) : locType === '디지털저장소' ? (
+              <select
+                className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
+                value={locDetail}
+                onChange={(e) => setLocDetail(e.target.value)}
+              >
+                {configDigitalLocs.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+              </select>
+            ) : (
+              <input
+                type="text"
+                className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 transition-all"
+                placeholder="상세 장소 입력"
+                value={locDetail}
+                onChange={(e) => setLocDetail(e.target.value)}
+                required
+              />
+            )}
+          </div>
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-gray-400 mb-1.5 ml-1">카테고리</label>
-        <select className="w-full p-3.5 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 border border-gray-100" value={itemCat} onChange={(e) => setItemCat(e.target.value)}>
-          {configCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-xs font-bold text-gray-400 mb-1.5 ml-1">상세 보관 장소 및 정보</label>
+        <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">특이사항 및 메모</label>
         <textarea
           rows={3}
-          className="w-full p-3.5 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 border border-gray-100 shadow-sm resize-none"
-          placeholder="예: 두 번째 서랍 안쪽 파란 상자 속&#10;중요한 서류니까 조심히 다룰 것"
+          className="w-full p-5 bg-gray-50 rounded-[2rem] text-sm font-medium outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 shadow-inner resize-none transition-all placeholder:text-gray-300"
+          placeholder="예: 오른쪽 두 번째 서랍 안쪽 깊은 곳, 파란 상자 안에 들어있음"
           value={itemTags}
           onChange={(e) => setItemTags(e.target.value)}
         />
       </div>
 
-      <button type="submit" className="w-full py-4 bg-indigo-600 text-white rounded-[1.5rem] font-bold shadow-xl shadow-indigo-200 mt-6 active:scale-95 transition-all text-sm h-14 flex items-center justify-center gap-2">
-        <i className="fas fa-check-circle"></i> {submitLabel}
+      <button type="submit" className="w-full py-5 brand-gradient text-white rounded-[2rem] font-black shadow-xl shadow-brand-100 mt-6 active:scale-95 transition-all text-base flex items-center justify-center gap-3 tracking-tight">
+        <i className="fas fa-check-circle text-xl"></i> {submitLabel}
       </button>
     </form>
   );
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col font-sans border-x border-gray-200 shadow-xl relative">
-      <header className="bg-white border-b px-6 py-4 sticky top-0 z-50 flex flex-col items-center text-center relative">
+      <header className="glass border-b border-gray-100/50 px-6 py-6 sticky top-0 z-50 flex flex-col items-center text-center relative rounded-b-[2.5rem] shadow-sm">
         <button
           onClick={() => setIsSettingsOpen(true)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white border border-gray-100 shadow-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-gray-50 active:scale-95 transition-all group"
+          className="absolute right-4 top-6 bg-white/50 backdrop-blur-md border border-white/80 shadow-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-white active:scale-95 transition-all group"
         >
-          <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+          <span className="w-6 h-6 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center group-hover:bg-brand-600 group-hover:text-white transition-all shadow-inner">
             <i className="fas fa-sliders-h text-[10px]"></i>
           </span>
-          <span className="text-xs font-bold text-gray-600 group-hover:text-gray-900">분류설정</span>
+          <span className="text-xs font-bold text-gray-600 group-hover:text-gray-900">설정</span>
         </button>
-        <h1 className="text-xl font-extrabold text-indigo-600 flex items-center justify-center gap-2 tracking-tight">
-          <span className="bg-indigo-600 text-white p-1.5 rounded-lg shadow-sm">
-            <i className="fas fa-brain text-sm"></i>
-          </span>
-          기억을 맡기는 앱
-        </h1>
-        <p className="text-[10px] text-gray-400 font-medium mt-1">당신의 소중한 것들의 위치 정보를 대신 기억해 드립니다.</p>
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 brand-gradient rounded-2xl shadow-lg shadow-brand-200 flex items-center justify-center mb-2 float-anim">
+            <i className="fas fa-brain text-white text-xl"></i>
+          </div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">
+            Memory <span className="gradient-text">Whisp</span>
+          </h1>
+          <p className="text-[11px] text-gray-400 font-semibold mt-1 tracking-wide uppercase">Your Digital Memory Safe</p>
+        </div>
       </header>
 
-      <div className="px-6 py-2 bg-white sticky top-[73px] z-40 shadow-sm">
-        <div className="relative">
+      <div className="px-6 py-4 bg-transparent sticky top-[110px] z-40">
+        <div className="relative group">
           <input
             type="text"
-            placeholder="무엇을 찾으시나요? (예: 여권)"
-            className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-indigo-400 focus:bg-white transition-all text-sm shadow-sm"
+            placeholder="어떤 물건을 찾으시나요?"
+            className="w-full pl-12 pr-4 py-4 bg-white/80 backdrop-blur-md rounded-3xl border border-white/50 focus:ring-4 focus:ring-brand-100 focus:bg-white transition-all text-sm shadow-xl card-shadow outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <i className="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-brand-400 text-lg transition-transform group-focus-within:scale-110"></i>
         </div>
       </div>
 
       <div className="px-6 py-6">
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 mb-8 flex items-center justify-between shadow-xl">
+        <div className="relative overflow-hidden brand-gradient rounded-[2.5rem] p-8 mb-8 flex items-center justify-between shadow-2xl shadow-brand-200">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
           <div className="z-10 relative">
-            <h2 className="text-xl font-bold text-white leading-tight">찾는 스트레스,<br />이제는 안녕! 👋</h2>
-            <p className="text-[11px] text-indigo-100 mt-2 font-medium opacity-90">기록은 저희가 담당합니다.</p>
+            <h2 className="text-2xl font-bold text-white leading-tight">복잡한 보관,<br />한 번에 <span className="text-brand-100">Click!</span></h2>
+            <p className="text-[12px] text-brand-50 mt-3 font-semibold opacity-80 backdrop-blur-sm bg-white/10 px-3 py-1 rounded-full w-fit">Smart Memory Manager</p>
           </div>
-          <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
-            <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse scale-110"></div>
-            <div className="relative w-full h-full bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 shadow-lg rotate-3">
-              <div className="absolute -top-2 -right-2 w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg animate-bounce"><i className="fas fa-lightbulb text-white text-lg"></i></div>
-              <i className="fas fa-robot text-white text-4xl drop-shadow-md"></i>
+          <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
+            <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse scale-125"></div>
+            <div className="relative w-full h-full glass rounded-3xl flex items-center justify-center border border-white/30 shadow-2xl rotate-6 transition-transform hover:rotate-0 duration-500">
+              <div className="absolute -top-3 -right-3 w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center shadow-lg animate-bounce duration-[2000ms]">
+                <i className="fas fa-bolt text-white text-xl"></i>
+              </div>
+              <i className="fas fa-sparkles text-brand-200 text-4xl mb-1"></i>
+              <div className="absolute inset-x-0 bottom-2 text-center text-[8px] font-black text-brand-100 tracking-tighter uppercase">AI Powered</div>
             </div>
           </div>
         </div>
@@ -508,55 +519,57 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="space-y-3 pb-24">
+        <div className="space-y-4 pb-28">
           {filteredItems.length === 0 ? (
-            <div className="text-center py-12 text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200">
-              <i className="fas fa-ghost text-4xl mb-3 block animate-bounce"></i>
-              <p className="text-sm font-medium">아직 맡겨진 기억이 없어요!</p>
+            <div className="text-center py-16 text-gray-400 glass rounded-[2.5rem] border-dashed border-2 border-gray-200">
+              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-box-open text-3xl opacity-30"></i>
+              </div>
+              <p className="text-sm font-bold text-gray-500">비어있는 기억 저장소</p>
+              <p className="text-[10px] text-gray-400 mt-1">잊고 싶지 않은 물건을 아래 + 버튼으로 추가하세요.</p>
             </div>
           ) : (
             filteredItems.map(item => (
               <div
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
-                className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-3 items-center group transition-all hover:shadow-md hover:border-indigo-100 cursor-pointer relative"
+                className="bg-white p-4 rounded-[2rem] card-shadow border border-white/60 flex gap-4 items-center group transition-all hover:scale-[1.02] hover:-translate-y-1 active:scale-[0.98] cursor-pointer relative"
               >
-                <div className="flex -space-x-3 overflow-hidden p-1">
+                <div className="flex -space-x-4 overflow-hidden p-1 shrink-0">
                   {item.imageUrls && item.imageUrls.length > 0 ? (
                     item.imageUrls.map((url, idx) => (
-                      <div key={idx} className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 border-2 border-white shadow-sm ring-1 ring-gray-100">
+                      <div key={idx} className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100 border-4 border-white shadow-xl ring-1 ring-gray-100 relative z-[2-idx]">
                         <img src={url} alt={item.name} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                       </div>
                     ))
                   ) : (
-                    <div className="w-16 h-16 rounded-xl flex-shrink-0 bg-gray-50 border border-dashed flex items-center justify-center text-gray-300">
-                      <i className="fas fa-cube text-xl"></i>
+                    <div className="w-20 h-20 rounded-2xl flex-shrink-0 bg-brand-50 border-2 border-white shadow-inner flex items-center justify-center text-brand-200">
+                      <i className="fas fa-layer-group text-2xl"></i>
                     </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0 ml-2">
-                  <div className="flex items-center gap-2 mb-0.5 overflow-hidden">
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded uppercase whitespace-nowrap">{item.category}</span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded whitespace-nowrap">{item.locationPath}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <span className="text-[10px] font-black px-2.5 py-1 bg-brand-600 text-white rounded-lg shadow-sm shadow-brand-200 uppercase tracking-tighter">{item.category}</span>
+                    <span className="text-[10px] font-bold px-2.5 py-1 bg-gray-100 text-gray-500 rounded-lg">{item.locationPath.split(' > ')[1] || item.locationPath}</span>
                   </div>
-                  <h4 className="font-bold text-gray-800 text-sm truncate">{item.name}</h4>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {item.tags.slice(0, 3).map(tag => (
-                      <span key={tag} className="text-[9px] text-indigo-500 bg-indigo-50/50 px-1 py-0.5 rounded">#{tag}</span>
+                  <h4 className="font-extrabold text-gray-900 text-base mb-1 tracking-tight">{item.name}</h4>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {item.tags.slice(0, 2).map(tag => (
+                      <span key={tag} className="text-[10px] text-brand-600 font-bold bg-brand-50 px-2 py-0.5 rounded-full border border-brand-100">#{tag}</span>
                     ))}
-                    {item.tags.length > 3 && <span className="text-[9px] text-gray-400">...</span>}
                   </div>
                 </div>
 
-                {/* 리스트 내 즉시 삭제 버튼 */}
                 <button
                   onClick={(e) => {
-                    e.stopPropagation(); // 클릭 이벤트가 부모(상세보기 열기)로 전달되지 않게 함
+                    e.stopPropagation();
                     deleteItem(item.id);
                   }}
-                  className="text-gray-300 hover:text-red-500 p-2 transition-colors flex-shrink-0"
+                  className="w-10 h-10 rounded-full bg-gray-50 text-gray-300 hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center shrink-0"
                 >
-                  <i className="fas fa-trash-alt text-sm"></i>
+                  <i className="fas fa-trash-alt text-xs"></i>
                 </button>
               </div>
             ))
@@ -566,19 +579,20 @@ const App: React.FC = () => {
 
       <button
         onClick={() => { resetForm(); setIsAdding(true); }}
-        className="fixed bottom-8 right-1/2 translate-x-1/2 w-16 h-16 bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all z-40 border-4 border-white"
+        className="fixed bottom-8 right-1/2 translate-x-1/2 w-20 h-20 brand-gradient text-white rounded-full shadow-[0_20px_50px_rgba(99,102,241,0.4)] flex items-center justify-center text-3xl hover:scale-110 active:scale-95 transition-all z-40 border-8 border-white group"
       >
-        <i className="fas fa-plus"></i>
+        <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+        <i className="fas fa-plus relative z-10"></i>
       </button>
 
       {/* Add Item Modal */}
       {isAdding && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 animate-slide-up shadow-2xl max-h-[95vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-800">새로운 기억 맡기기</h2>
-              <button onClick={() => { setIsAdding(false); stopCamera(); }} className="bg-gray-100 text-gray-400 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <i className="fas fa-times text-sm"></i>
+        <div className="fixed inset-0 bg-black/40 z-[100] flex items-end justify-center backdrop-blur-sm p-4">
+          <div className="bg-white/95 backdrop-blur-2xl w-full max-w-md rounded-[3rem] p-8 animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto relative border border-white/50 card-shadow">
+            <div className="flex justify-between items-center mb-8 sticky top-0 bg-white/50 backdrop-blur-md -mx-8 px-8 py-4 z-20 -mt-8 rounded-t-[3rem] border-b border-gray-100/50">
+              <h2 className="text-base font-black text-gray-900 tracking-tight">새로운 기억 맡기기</h2>
+              <button onClick={() => { setIsAdding(false); stopCamera(); }} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all">
+                <i className="fas fa-times text-gray-400 text-sm"></i>
               </button>
             </div>
             {renderFormFields(handleAddItem, '이대로 보관하기')}
@@ -588,99 +602,95 @@ const App: React.FC = () => {
 
       {/* Item Detail / Edit Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 animate-slide-up shadow-2xl max-h-[95vh] overflow-y-auto">
-            {/* 세련된 헤더 섹션 (뒤로가기 포함) */}
-            <div className="flex justify-between items-center mb-6 sticky top-0 bg-white pt-2 pb-4 z-20">
+        <div className="fixed inset-0 bg-black/40 z-[100] flex items-end justify-center backdrop-blur-sm p-4">
+          <div className="bg-white/95 backdrop-blur-2xl w-full max-w-md rounded-[3rem] p-8 animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto relative border border-white/50 card-shadow">
+            <div className="flex justify-between items-center mb-8 sticky top-0 bg-white/50 backdrop-blur-md -mx-8 px-8 py-4 z-20 -mt-8 rounded-t-[3rem] border-b border-gray-100/50">
               <button
                 onClick={() => { setSelectedItem(null); setIsEditMode(false); stopCamera(); }}
-                className="flex items-center gap-1.5 text-indigo-600 font-bold text-sm hover:bg-indigo-50 px-3 py-1.5 rounded-xl transition-all active:scale-95"
+                className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all active:scale-95"
               >
-                <i className="fas fa-chevron-left"></i>
-                뒤로가기
+                <i className="fas fa-arrow-left text-gray-400 text-sm"></i>
               </button>
-              <h2 className="text-lg font-bold text-gray-800 absolute left-1/2 -translate-x-1/2 pointer-events-none">
-                {isEditMode ? '기억 수정하기' : '상세 정보'}
+              <h2 className="text-base font-black text-gray-900 tracking-tight">
+                {isEditMode ? '기억 수정' : '상세 정보'}
               </h2>
               <button
                 onClick={() => { setSelectedItem(null); setIsEditMode(false); stopCamera(); }}
-                className="bg-gray-100 text-gray-400 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200"
+                className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all"
               >
-                <i className="fas fa-times text-sm"></i>
+                <i className="fas fa-times text-gray-400 text-sm"></i>
               </button>
             </div>
 
             {isEditMode ? (
-              renderFormFields(handleUpdateItem, '수정 완료')
+              renderFormFields(handleUpdateItem, '변경사항 저장')
             ) : (
-              <div className="space-y-6 pb-4">
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-8 pb-4">
+                <div className="grid grid-cols-2 gap-4">
                   {[0, 1].map((idx) => (
-                    <div key={idx} className="flex flex-col gap-1.5">
-                      <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm flex items-center justify-center relative">
+                    <div key={idx} className="flex flex-col gap-2">
+                      <div className="aspect-square rounded-[2rem] overflow-hidden bg-gray-50 border-4 border-white shadow-2xl flex items-center justify-center relative">
                         {selectedItem.imageUrls[idx] ? (
                           <img src={selectedItem.imageUrls[idx]} alt={idx === 0 ? '기억물품' : '수납장소'} className="w-full h-full object-cover" />
                         ) : (
                           <div className="flex flex-col items-center text-gray-200">
-                            <i className="fas fa-image text-2xl mb-1"></i>
-                            <span className="text-[8px] font-bold">이미지 없음</span>
+                            <i className="fas fa-image text-4xl mb-2 opacity-30"></i>
+                            <span className="text-[10px] font-black uppercase tracking-tighter">No Image</span>
                           </div>
                         )}
+                        <div className="absolute top-2 left-2 bg-black/20 backdrop-blur-md px-2 py-1 rounded-lg text-[8px] text-white font-black uppercase tracking-widest">{idx === 0 ? 'ITEM' : 'PLACE'}</div>
                       </div>
-                      <p className="text-center text-[10px] font-bold text-gray-400">{idx === 0 ? '기억물품' : '수납장소'}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">물건 이름</p>
-                    <div className="flex justify-between items-end">
-                      <p className="text-lg font-bold text-gray-800">{selectedItem.name}</p>
-                      <p className="text-[10px] text-gray-400 font-medium">
-                        {new Date(selectedItem.updatedAt).toLocaleDateString()} 업데이트
-                      </p>
+                <div className="space-y-6">
+                  <div className="p-1">
+                    <p className="text-[10px] font-black text-brand-500 uppercase tracking-[0.2em] mb-3">Item Identity</p>
+                    <div className="flex justify-between items-start gap-4">
+                      <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">{selectedItem.name}</h3>
+                      <span className="shrink-0 text-[10px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                        {new Date(selectedItem.updatedAt).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">보관 장소</p>
-                      <p className="text-sm font-bold text-indigo-600">{selectedItem.locationPath}</p>
+                    <div className="bg-indigo-50/50 p-5 rounded-[2rem] border border-indigo-100/50 shadow-inner">
+                      <p className="text-[10px] font-black text-brand-400 uppercase tracking-widest mb-2">Location</p>
+                      <p className="text-base font-black text-indigo-700 leading-tight">{selectedItem.locationPath}</p>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">카테고리</p>
-                      <p className="text-sm font-bold text-gray-700">{selectedItem.category}</p>
+                    <div className="bg-emerald-50/50 p-5 rounded-[2rem] border border-emerald-100/50 shadow-inner">
+                      <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">Category</p>
+                      <p className="text-base font-black text-emerald-700 leading-tight">{selectedItem.category}</p>
                     </div>
                   </div>
 
                   <div className="relative group">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">상세 보관 장소 및 정보</p>
-                    {/* 메모장 스타일 컨테이너 */}
-                    <div className="bg-yellow-50 p-5 rounded-2xl border-l-4 border-yellow-400 shadow-sm min-h-[120px] relative overflow-hidden ring-1 ring-yellow-100">
-                      <div className="absolute top-0 right-0 w-10 h-10 bg-yellow-100 rounded-bl-3xl shadow-inner opacity-40"></div>
-                      <div className="text-sm text-yellow-900 leading-relaxed font-medium whitespace-pre-wrap relative z-10">
-                        {selectedItem.tags.length > 0
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Special Notes</p>
+                    <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-xl relative overflow-hidden ring-4 ring-gray-50/50">
+                      <div className="text-base text-gray-700 leading-relaxed font-semibold whitespace-pre-wrap relative z-10 italic">
+                        "{selectedItem.tags.length > 0
                           ? selectedItem.tags.join('\n')
-                          : '기록된 상세 정보가 없습니다.'}
+                          : '기록된 상세 정보가 없습니다.'}"
                       </div>
-                      <i className="fas fa-sticky-note absolute bottom-3 right-3 text-yellow-200/50 text-2xl"></i>
+                      <i className="fas fa-quote-right absolute bottom-4 right-6 text-brand-50 text-5xl opacity-50"></i>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-6">
+                <div className="flex gap-4 pt-4">
                   <button
                     onClick={() => deleteItem(selectedItem!.id)}
-                    className="flex-1 py-4 bg-red-50 text-red-500 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-red-100"
+                    className="flex-1 py-5 bg-red-50 text-red-500 rounded-3xl font-black flex items-center justify-center gap-2 active:scale-95 transition-all border border-red-100 hover:bg-red-100 text-sm"
                   >
-                    <i className="fas fa-trash-alt"></i> 삭제하기
+                    <i className="fas fa-trash-alt"></i> 삭제
                   </button>
                   <button
                     onClick={openEditMode}
-                    className="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 active:scale-95 transition-all hover:bg-indigo-700"
+                    className="flex-[2] py-5 brand-gradient text-white rounded-3xl font-black flex items-center justify-center gap-3 shadow-2xl shadow-brand-100 active:scale-95 transition-all text-sm tracking-tight"
                   >
-                    <i className="fas fa-edit"></i> 수정하기
+                    <i className="fas fa-edit"></i> 정보 수정하기
                   </button>
                 </div>
               </div>
@@ -720,49 +730,53 @@ const App: React.FC = () => {
       `}</style>
       {/* Settings Modal */}
       {isSettingsOpen && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 py-2">
-              <h2 className="text-xl font-bold text-gray-800">설정 관리</h2>
-              <button onClick={() => setIsSettingsOpen(false)} className="bg-gray-100 text-gray-400 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200">
-                <i className="fas fa-times text-sm"></i>
+        <div className="fixed inset-0 bg-black/40 z-[100] flex items-end justify-center backdrop-blur-sm p-4">
+          <div className="bg-white/95 backdrop-blur-2xl w-full max-w-md rounded-[3rem] p-8 animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto relative border border-white/50 card-shadow">
+            <div className="flex justify-between items-center mb-8 sticky top-0 bg-white/50 backdrop-blur-md -mx-8 px-8 py-4 z-20 -mt-8 rounded-t-[3rem] border-b border-gray-100/50">
+              <h2 className="text-base font-black text-gray-900 tracking-tight">환경 설정</h2>
+              <button onClick={() => setIsSettingsOpen(false)} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all">
+                <i className="fas fa-times text-gray-400 text-sm"></i>
               </button>
             </div>
 
-            <div className="space-y-8 pb-8">
-              <div className="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
-                <h3 className="font-bold text-sm text-indigo-900 mb-3 flex items-center gap-2">
-                  <i className="fas fa-database"></i> 데이터 백업 및 복원
+            <div className="space-y-10 pb-8">
+              <div className="brand-gradient p-8 rounded-[2.5rem] shadow-2xl shadow-brand-100 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-xl"></div>
+                <h3 className="font-black text-sm text-white mb-4 flex items-center gap-2">
+                  <i className="fas fa-database opacity-70"></i> 데이터 관리
                 </h3>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={handleExportData}
-                    className="flex-1 py-3 bg-white text-indigo-600 rounded-xl text-xs font-bold border border-indigo-200 shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-indigo-50"
+                    className="flex-1 py-4 bg-white/20 backdrop-blur-md text-white rounded-2xl text-[11px] font-black border border-white/30 shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-white/30"
                   >
-                    <i className="fas fa-download"></i> 백업 저장
+                    <i className="fas fa-download"></i> 백업하기
                   </button>
-                  <label className="flex-1 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-indigo-700">
-                    <i className="fas fa-upload"></i> 데이터 복원
+                  <label className="flex-1 py-4 bg-white text-brand-600 rounded-2xl text-[11px] font-black shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-brand-50">
+                    <i className="fas fa-upload"></i> 복원하기
                     <input type="file" accept=".json" className="hidden" onChange={handleImportData} />
                   </label>
                 </div>
-                <p className="text-[10px] text-indigo-400 mt-2 leading-relaxed">
-                  * 기기를 변경하거나 브라우저 캐시 삭제에 대비해 주기적으로 백업 파일을 저장해 주세요.
+                <p className="text-[9px] text-brand-100 mt-4 leading-relaxed font-bold opacity-80 text-center uppercase tracking-widest">
+                  Secure your memories periodically
                 </p>
               </div>
 
               {[
-                { title: '보관 장소 1 (구분)', list: configLocTypes, setList: setConfigLocTypes },
-                { title: '집 상세 장소', list: configHomeLocs, setList: setConfigHomeLocs },
-                { title: '사무실 상세 장소', list: configOfficeLocs, setList: setConfigOfficeLocs },
-                { title: '디지털 저장소 상세', list: configDigitalLocs, setList: setConfigDigitalLocs },
-                { title: '카테고리', list: configCategories, setList: setConfigCategories },
+                { title: 'Location Groups', list: configLocTypes, setList: setConfigLocTypes },
+                { title: 'Home Details', list: configHomeLocs, setList: setConfigHomeLocs },
+                { title: 'Office Details', list: configOfficeLocs, setList: setConfigOfficeLocs },
+                { title: 'Digital Paths', list: configDigitalLocs, setList: setConfigDigitalLocs },
+                { title: 'Item Categories', list: configCategories, setList: setConfigCategories },
               ].map((section, sIdx) => (
-                <div key={sIdx}>
-                  <h3 className="font-bold text-sm text-gray-800 mb-3 border-b border-gray-100 pb-2">{section.title}</h3>
-                  <div className="flex flex-wrap gap-2 mb-3">
+                <div key={sIdx} className="space-y-4">
+                  <div className="flex justify-between items-center px-1">
+                    <h3 className="font-black text-[10px] text-gray-400 uppercase tracking-[0.2em]">{section.title}</h3>
+                    <span className="text-[10px] font-bold text-brand-500 bg-brand-50 px-2 py-0.5 rounded-full">{section.list.length}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2.5">
                     {section.list.map((item, idx) => (
-                      <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-600">
+                      <span key={idx} className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-100 rounded-2xl text-xs font-bold text-gray-700 shadow-sm hover:border-brand-200 transition-colors">
                         {item}
                         <button
                           onClick={() => {
@@ -770,9 +784,9 @@ const App: React.FC = () => {
                               section.setList(prev => prev.filter((_, i) => i !== idx));
                             }
                           }}
-                          className="text-gray-400 hover:text-red-500 w-4 h-4 flex items-center justify-center"
+                          className="text-gray-300 hover:text-red-500 transition-colors"
                         >
-                          <i className="fas fa-times"></i>
+                          <i className="fas fa-times-circle"></i>
                         </button>
                       </span>
                     ))}
@@ -791,11 +805,11 @@ const App: React.FC = () => {
                     <input
                       name="newItem"
                       type="text"
-                      placeholder="새 항목 추가"
-                      className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none"
+                      placeholder="Add new item..."
+                      className="flex-1 bg-gray-50 border border-gray-100 rounded-[1.5rem] px-5 py-3 text-xs font-bold focus:ring-4 focus:ring-brand-100 outline-none placeholder:text-gray-300 transition-all shadow-inner"
                     />
-                    <button type="submit" className="bg-indigo-600 text-white w-8 h-8 rounded-xl flex items-center justify-center shadow-md active:scale-95">
-                      <i className="fas fa-plus text-xs"></i>
+                    <button type="submit" className="w-11 h-11 brand-gradient text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-all">
+                      <i className="fas fa-plus text-sm"></i>
                     </button>
                   </form>
                 </div>
