@@ -14,5 +14,7 @@
     "onboardingCompleted": false,
     "lastActivity": "2026-02-10T02:17:40.934Z"
   },
-  "history": []
+  "history": [],
+  "_snapshotTimestamp": "2026-02-10T02:18:54.744Z",
+  "_reason": "pre-compress"
 }

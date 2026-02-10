@@ -118,7 +118,7 @@ export const analyzeImage = async (base64Image: string): Promise<{ name: string,
       config: { responseMimeType: 'application/json' }
     });
 
-    const text = response.text ? response.text() : "{}";
+    const text = response.text || "{}";
     // Note: depending on SDK version, .text might be a function or property. 
     // In the previous code it was accessed as property .text, but typically it is text().
     // Let's try to be safe. "response.text" in the previous code was treated as string property.
@@ -129,7 +129,7 @@ export const analyzeImage = async (base64Image: string): Promise<{ name: string,
     // If using @google/genai (Node), it returns a different structure. 
     // I'll stick to the previous pattern but sanitize the JSON.
 
-    const jsonStr = typeof response.text === 'function' ? response.text() : (response.text || '{}');
+    const jsonStr = response.text || '{}';
     return JSON.parse(jsonStr);
 
   } catch (error) {
