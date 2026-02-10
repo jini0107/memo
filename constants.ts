@@ -15,3 +15,5 @@ export const DIGITAL_LOCATIONS = [
 ];
 
 export const CATEGORIES = Object.values(Category);
+
+export const DELETE_CONFIRM_MESSAGE = '이 항목을 정말 삭제할까요?';

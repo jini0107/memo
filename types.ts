@@ -8,12 +8,10 @@ export interface Location {
 export interface Item {
   id: string;
   name: string;
-  locationId: string;
   locationPath: string; // "안방 > 세 번째 서랍" 처럼 표시용
   category: string;
   imageUrls: string[]; // 최대 2장까지 저장
-  description?: string;
-  tags: string[];
+  notes: string[];
   updatedAt: number;
 }
 
