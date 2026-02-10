@@ -36,3 +36,12 @@ coverage/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Agent related (Skills and Rules)
+skills/
+docs/
+.agent/
+.gemini/
+.memory/
+*.memory.json
+plan.md
