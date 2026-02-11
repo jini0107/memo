@@ -30,7 +30,7 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
           <i className="fas fa-box-open text-3xl opacity-30"></i>
         </div>
         <p className="text-sm font-bold text-gray-500">비어있는 기억 저장소</p>
-        <p className="text-[10px] text-gray-400 mt-1">잊고 싶지 않은 물건을 아래 + 버튼으로 추가하세요.</p>
+        <p className="text-xs text-gray-400 mt-1">잊고 싶지 않은 물건을 아래 + 버튼으로 추가하세요.</p>
       </div>
     );
   }
@@ -41,10 +41,10 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
         <table className="w-full text-left border-collapse bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
           <thead>
             <tr className="bg-gray-50/80 border-b border-gray-100">
-              <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">품명</th>
-              <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">위치</th>
-              <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">카테고리</th>
-              <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">최종수정</th>
+              <th className="px-4 py-3 text-xs font-black text-gray-400 uppercase tracking-widest">품명</th>
+              <th className="px-4 py-3 text-xs font-black text-gray-400 uppercase tracking-widest">위치</th>
+              <th className="px-4 py-3 text-xs font-black text-gray-400 uppercase tracking-widest">카테고리</th>
+              <th className="px-4 py-3 text-xs font-black text-gray-400 uppercase tracking-widest">최종수정</th>
               <th className="px-3 py-3 w-10"></th>
             </tr>
           </thead>
@@ -61,17 +61,17 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
                       <img src={item.imageUrls[0]} className="w-8 h-8 rounded-lg object-cover shadow-sm bg-gray-100" alt="" />
                     ) : (
                       <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-300">
-                        <i className="fas fa-box text-[10px]"></i>
+                        <i className="fas fa-box text-xs"></i>
                       </div>
                     )}
-                    <span className="font-bold text-gray-900 text-xs truncate max-w-[120px]">{item.name}</span>
+                    <span className="font-bold text-gray-900 text-sm truncate max-w-[120px]">{item.name}</span>
                   </div>
                 </td>
-                <td className="px-4 py-4 text-[10px] font-medium text-gray-600 truncate max-w-[100px]">{item.locationPath}</td>
+                <td className="px-4 py-4 text-xs font-medium text-gray-600 truncate max-w-[100px]">{item.locationPath}</td>
                 <td className="px-4 py-4">
-                  <span className="text-[9px] font-black px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md whitespace-nowrap">{item.category}</span>
+                  <span className="text-[10px] font-black px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md whitespace-nowrap">{item.category}</span>
                 </td>
-                <td className="px-4 py-4 text-[9px] text-gray-400 tabular-nums">
+                <td className="px-4 py-4 text-[10px] text-gray-400 tabular-nums">
                   {new Date(item.updatedAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                 </td>
                 <td className="px-3 py-4">
@@ -82,7 +82,7 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
                     }}
                     className="w-7 h-7 rounded-full text-gray-300 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
                   >
-                    <i className="fas fa-trash-alt text-[10px]"></i>
+                    <i className="fas fa-trash-alt text-xs"></i>
                   </button>
                 </td>
               </tr>
@@ -117,13 +117,13 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="text-[10px] font-black px-2.5 py-1 bg-brand-600 text-white rounded-lg shadow-sm shadow-brand-200 uppercase tracking-tighter">{item.category}</span>
-              <span className="text-[10px] font-bold px-2.5 py-1 bg-gray-100 text-gray-500 rounded-lg">{item.locationPath.split(' > ')[1] || item.locationPath}</span>
+              <span className="text-xs font-black px-2.5 py-1 bg-brand-600 text-white rounded-lg shadow-sm shadow-brand-200 uppercase tracking-tighter">{item.category}</span>
+              <span className="text-xs font-bold px-2.5 py-1 bg-gray-100 text-gray-500 rounded-lg">{item.locationPath.split(' > ')[1] || item.locationPath}</span>
             </div>
-            <h4 className="font-extrabold text-gray-900 text-base mb-1 tracking-tight">{item.name}</h4>
+            <h4 className="font-extrabold text-gray-900 text-lg mb-1 tracking-tight">{item.name}</h4>
             <div className="flex flex-wrap gap-1.5 mt-2">
               {item.notes.slice(0, 2).map(note => (
-                <span key={note} className="text-[10px] text-brand-600 font-bold bg-brand-50 px-2 py-0.5 rounded-full border border-brand-100">#{note}</span>
+                <span key={note} className="text-xs text-brand-600 font-bold bg-brand-50 px-2 py-0.5 rounded-full border border-brand-100">#{note}</span>
               ))}
             </div>
           </div>
@@ -135,7 +135,7 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
             }}
             className="w-10 h-10 rounded-full bg-gray-50 text-gray-300 hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center shrink-0"
           >
-            <i className="fas fa-trash-alt text-xs"></i>
+            <i className="fas fa-trash-alt text-sm"></i>
           </button>
         </div>
       ))}

@@ -37,7 +37,7 @@ const ItemForm: React.FC<ItemFormProps> = ({
   const updateForm = (updates: Partial<typeof formState>) => {
     dispatch({ type: 'UPDATE_FORM', payload: updates });
   };
-  
+
   const setActiveCameraSlot = (slot: number | null) => {
     dispatch({ type: 'SET_CAMERA_ACTIVE', payload: { isActive: state.isCameraActive, slot } });
   }
@@ -65,7 +65,7 @@ const ItemForm: React.FC<ItemFormProps> = ({
                 <div className="w-full h-full relative group">
                   <img src={itemImages[idx]} className="w-full h-full object-cover" alt={idx === 0 ? '기억물품' : '수납장소'} />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all backdrop-blur-[4px]">
-                    <button type="button" onClick={() => removeImage(idx)} className="bg-red-500 text-white px-4 py-2 rounded-2xl text-[11px] font-black shadow-2xl tracking-tight">이미지 삭제</button>
+                    <button type="button" onClick={() => removeImage(idx)} className="bg-red-500 text-white px-4 py-2 rounded-2xl text-xs font-black shadow-2xl tracking-tight">이미지 삭제</button>
                   </div>
                 </div>
               ) : (
@@ -78,7 +78,7 @@ const ItemForm: React.FC<ItemFormProps> = ({
                       <i className="fas fa-images text-gray-400 text-lg"></i>
                     </button>
                   </div>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{idx === 0 ? '물건 사진' : '공간 사진'}</span>
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{idx === 0 ? '물건 사진' : '공간 사진'}</span>
                 </div>
               )}
             </div>
@@ -87,42 +87,28 @@ const ItemForm: React.FC<ItemFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest flex justify-between items-center">
+        <label className="block text-xs font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest flex justify-between items-center">
           <span>물건 이름</span>
-          {isAnalyzing && (
-            <span className="text-brand-600 flex items-center gap-1 normal-case tracking-normal">
-              <i className="fas fa-spinner fa-spin"></i> 분석 중...
-            </span>
-          )}
+
         </label>
         <div className="relative">
           <input
             required
             type="text"
-            className="w-full p-4 bg-gray-50 rounded-2xl text-sm outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 font-bold placeholder:font-medium transition-all"
+            className="w-full p-4 bg-gray-50 rounded-2xl text-base outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 font-bold placeholder:font-medium transition-all"
             placeholder="여권, 외장하드, 비상금 등"
             value={itemName}
             onChange={(e) => updateForm({ itemName: e.target.value })}
           />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={performNameAnalysis}
-              disabled={isAnalyzing || !itemName.trim()}
-              className={`w-10 h-10 brand-gradient text-white rounded-xl text-[10px] flex items-center justify-center shadow-lg transition-all active:scale-90 ${(!itemName.trim() || isAnalyzing) ? 'opacity-30 grayscale' : 'opacity-100'}`}
-              title="AI 자동 완성"
-            >
-              <i className="fas fa-magic"></i>
-            </button>
-          </div>
+
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">장소 구분</label>
+          <label className="block text-xs font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">장소 구분</label>
           <select
-            className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
+            className="w-full p-4 bg-gray-50 rounded-2xl text-base font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
             value={locType}
             onChange={(e) => {
               const newType = e.target.value;
@@ -142,11 +128,11 @@ const ItemForm: React.FC<ItemFormProps> = ({
           </select>
         </div>
         <div>
-          <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">상세 위치</label>
+          <label className="block text-xs font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">상세 위치</label>
           <div className="relative">
             {locType === config.locTypes[0] ? (
               <select
-                className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
+                className="w-full p-4 bg-gray-50 rounded-2xl text-base font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
                 value={locDetail}
                 onChange={(e) => updateForm({ locDetail: e.target.value })}
               >
@@ -154,7 +140,7 @@ const ItemForm: React.FC<ItemFormProps> = ({
               </select>
             ) : locType === config.locTypes[1] ? (
               <select
-                className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
+                className="w-full p-4 bg-gray-50 rounded-2xl text-base font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
                 value={locDetail}
                 onChange={(e) => updateForm({ locDetail: e.target.value })}
               >
@@ -162,7 +148,7 @@ const ItemForm: React.FC<ItemFormProps> = ({
               </select>
             ) : locType === config.locTypes[2] ? (
               <select
-                className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
+                className="w-full p-4 bg-gray-50 rounded-2xl text-base font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 appearance-none"
                 value={locDetail}
                 onChange={(e) => updateForm({ locDetail: e.target.value })}
               >
@@ -171,7 +157,7 @@ const ItemForm: React.FC<ItemFormProps> = ({
             ) : (
               <input
                 type="text"
-                className="w-full p-4 bg-gray-50 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 transition-all"
+                className="w-full p-4 bg-gray-50 rounded-2xl text-base font-bold outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 transition-all"
                 placeholder="상세 장소 입력"
                 value={locDetail}
                 onChange={(e) => updateForm({ locDetail: e.target.value })}
@@ -183,17 +169,17 @@ const ItemForm: React.FC<ItemFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">특이사항 및 메모</label>
+        <label className="block text-xs font-black text-gray-400 mb-2 ml-1 uppercase tracking-widest">특이사항 및 메모</label>
         <textarea
           rows={3}
-          className="w-full p-5 bg-gray-50 rounded-[2rem] text-sm font-medium outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 shadow-inner resize-none transition-all placeholder:text-gray-300"
+          className="w-full p-5 bg-gray-50 rounded-[2rem] text-base font-medium outline-none focus:ring-4 focus:ring-brand-100 border border-gray-100 shadow-inner resize-none transition-all placeholder:text-gray-300"
           placeholder="예: 오른쪽 두 번째 서랍 안쪽 깊은 곳, 파란 상자 안에 들어있음"
           value={itemNotes}
           onChange={(e) => updateForm({ itemNotes: e.target.value })}
         />
       </div>
 
-      <button type="submit" className="w-full py-5 brand-gradient text-white rounded-[2rem] font-black shadow-xl shadow-brand-100 mt-6 active:scale-95 transition-all text-base flex items-center justify-center gap-3 tracking-tight">
+      <button type="submit" className="w-full py-5 brand-gradient text-white rounded-[2rem] font-black shadow-xl shadow-brand-100 mt-6 active:scale-95 transition-all text-lg flex items-center justify-center gap-3 tracking-tight">
         <i className="fas fa-check-circle text-xl"></i> {submitLabel}
       </button>
     </form>

@@ -304,14 +304,14 @@ const App: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col font-sans border-x border-gray-200 shadow-xl relative">
+    <div className="w-full max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col font-sans md:border-x border-gray-200 md:shadow-xl relative text-gray-900">
       <header className="glass border-b border-gray-100/50 px-6 py-6 sticky top-0 z-50 flex flex-col items-center text-center relative rounded-b-[2.5rem] shadow-sm">
         <button
           onClick={() => dispatch({ type: 'TOGGLE_SETTINGS', payload: true })}
           className="absolute right-4 top-6 bg-white/50 backdrop-blur-md border border-white/80 shadow-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-white active:scale-95 transition-all group"
         >
           <span className="w-6 h-6 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center group-hover:bg-brand-600 group-hover:text-white transition-all shadow-inner">
-            <i className="fas fa-sliders-h text-[10px]"></i>
+            <i className="fas fa-sliders-h text-xs"></i>
           </span>
           <span className="text-xs font-bold text-gray-600 group-hover:text-gray-900">설정</span>
         </button>
@@ -322,35 +322,19 @@ const App: React.FC = () => {
           <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">
             Memory <span className="gradient-text">Whisp</span>
           </h1>
-          <p className="text-[11px] text-gray-400 font-semibold mt-1 tracking-wide uppercase">Your Digital Memory Safe</p>
+          <p className="text-xs text-gray-400 font-semibold mt-1 tracking-wide uppercase">Your Digital Memory Safe</p>
         </div>
       </header>
 
       <SearchBar />
 
       <div className="px-6 py-6">
-        <div className="relative overflow-hidden brand-gradient rounded-[2.5rem] p-8 mb-8 flex items-center justify-between shadow-2xl shadow-brand-200">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-          <div className="z-10 relative">
-            <h2 className="text-2xl font-bold text-white leading-tight">복잡한 보관,<br />한 번에 <span className="text-brand-100">Click!</span></h2>
-            <p className="text-[12px] text-brand-50 mt-3 font-semibold opacity-80 backdrop-blur-sm bg-white/10 px-3 py-1 rounded-full w-fit">Smart Memory Manager</p>
-          </div>
-          <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
-            <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse scale-125"></div>
-            <div className="relative w-full h-full glass rounded-3xl flex items-center justify-center border border-white/30 shadow-2xl rotate-6 transition-transform hover:rotate-0 duration-500">
-              <div className="absolute -top-3 -right-3 w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center shadow-lg animate-bounce duration-[2000ms]">
-                <i className="fas fa-bolt text-white text-xl"></i>
-              </div>
-              <i className="fas fa-sparkles text-brand-200 text-4xl mb-1"></i>
-              <div className="absolute inset-x-0 bottom-2 text-center text-[8px] font-black text-brand-100 tracking-tighter uppercase">AI Powered</div>
-            </div>
-          </div>
-        </div>
+
 
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-4">
             <h3 className="font-bold text-gray-700 flex items-center gap-2">
-              <i className="fas fa-list-ul text-indigo-400 text-xs"></i>
+              <i className="fas fa-list-ul text-indigo-400 text-sm"></i>
               보관된 아이템 ({filteredItems.length})
             </h3>
             <div className="flex bg-gray-100/80 p-0.5 rounded-lg border border-gray-200/50">
@@ -359,14 +343,14 @@ const App: React.FC = () => {
                 className={`p-1.5 rounded-md transition-all ${state.viewMode === 'card' ? 'bg-white shadow-sm text-brand-600' : 'text-gray-400 hover:text-gray-600'}`}
                 title="카드 뷰"
               >
-                <i className="fas fa-th-large text-[10px]"></i>
+                <i className="fas fa-th-large text-xs"></i>
               </button>
               <button
                 onClick={() => dispatch({ type: 'SET_VIEW_MODE', payload: 'table' })}
                 className={`p-1.5 rounded-md transition-all ${state.viewMode === 'table' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}
                 title="테이블 뷰"
               >
-                <i className="fas fa-table text-[10px]"></i>
+                <i className="fas fa-table text-xs"></i>
               </button>
             </div>
           </div>
@@ -375,7 +359,7 @@ const App: React.FC = () => {
               <button
                 key={opt.id}
                 onClick={() => dispatch({ type: 'SET_SORT_OPTION', payload: opt.id })}
-                className={`text-[10px] px-2 py-1 rounded-md font-bold transition-all ${sortOption === opt.id
+                className={`text-xs px-2 py-1 rounded-md font-bold transition-all ${sortOption === opt.id
                   ? 'bg-white text-indigo-600 shadow-sm'
                   : 'text-gray-400 hover:text-gray-600'
                   }`}

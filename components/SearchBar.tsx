@@ -32,29 +32,23 @@ const SearchBar: React.FC = () => {
           <input
             type="text"
             placeholder="어떤 물건을 찾으시나요?"
-            className="w-full pl-12 pr-4 py-4 bg-white/80 backdrop-blur-md rounded-3xl border border-white/50 focus:ring-4 focus:ring-brand-100 focus:bg-white transition-all text-sm shadow-xl card-shadow outline-none"
+            className="w-full pl-12 pr-4 py-4 bg-white/80 backdrop-blur-md rounded-3xl border border-white/50 focus:ring-4 focus:ring-brand-100 focus:bg-white transition-all text-base shadow-xl card-shadow outline-none"
             value={searchTerm}
             onChange={(e) => dispatch({ type: 'SET_SEARCH_TERM', payload: e.target.value })}
             onKeyDown={(e) => e.key === 'Enter' && handleAISearch()}
           />
           <i className="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-brand-400 text-lg transition-transform group-focus-within:scale-110"></i>
         </div>
-        <button
-          onClick={handleAISearch}
-          disabled={isSearchingAI || !searchTerm.trim()}
-          className={`px-5 brand-gradient text-white rounded-[1.5rem] shadow-lg flex items-center justify-center transition-all active:scale-95 ${(!searchTerm.trim() || isSearchingAI) ? 'opacity-50 grayscale' : 'opacity-100'}`}
-        >
-          {isSearchingAI ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-robot"></i>}
-        </button>
+
       </div>
       {aiSearchResults && (
         <div className="mt-2 px-2 flex items-center justify-between">
-          <p className="text-[10px] font-bold text-brand-600">
+          <p className="text-xs font-bold text-brand-600">
             <i className="fas fa-magic mr-1"></i> AI가 분석한 검색 결과입니다.
           </p>
           <button
             onClick={resetAISearch}
-            className="text-[10px] font-bold text-gray-400 hover:text-gray-600"
+            className="text-xs font-bold text-gray-400 hover:text-gray-600"
           >
             초기화
           </button>
