@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhereIsIt - Your Memory Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script>
+    window.process = { env: {} };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            duo: {
+              green: { DEFAULT: '#58cc02', shade: '#58a700' },
+              blue: { DEFAULT: '#1cb0f6', shade: '#1899d6' },
+              yellow: { DEFAULT: '#ffc800', shade: '#e5b400' },
+              red: { DEFAULT: '#ff4b4b', shade: '#ea2b2b' },
+              gray: { DEFAULT: '#e5e5e5', shade: '#afafaf', light: '#f7f7f7' },
+              purple: { DEFAULT: '#ce82ff', shade: '#a568cc' },
+              white: { DEFAULT: '#ffffff', shade: '#e5e5e5' }
+            },
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe', // Keeping for compatibility
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+            }
+          },
+          borderRadius: {
+            '4xl': '2rem',
+            '5xl': '3rem',
+            'card': '1.5rem',
+            'btn': '1rem',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-color: #ffffff;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background-color: #f7f7f7;
+    }
+
+    /* 3D Button Components */
+    .btn-3d {
+      transition: all 0.1s;
+      border-bottom-width: 4px;
+      transform: translateY(0);
+    }
+
+    .btn-3d:active {
+      border-bottom-width: 0px;
+      transform: translateY(4px);
+      margin-top: 4px;
+      /* Optional adjustment */
+    }
+
+    /* Color Variants for Buttons */
+    .btn-duo-green {
+      background-color: #58cc02;
+      border-color: #58a700;
+      color: white;
+    }
+
+    .btn-duo-green:hover {
+      background-color: #61e002;
+    }
+
+    .btn-duo-blue {
+      background-color: #1cb0f6;
+      border-color: #1899d6;
+      color: white;
+    }
+
+    .btn-duo-blue:hover {
+      background-color: #2ec0ff;
+    }
+
+    .btn-duo-yellow {
+      background-color: #ffc800;
+      border-color: #e5b400;
+      color: #4b4b4b;
+    }
+
+    .btn-duo-white {
+      background-color: white;
+      border-color: #e5e5e5;
+      color: #afafaf;
+    }
+
+    .btn-duo-white:hover {
+      background-color: #f7f7f7;
+      color: #4b4b4b;
+    }
+
+    .btn-duo-purple {
+      background-color: #ce82ff;
+      border-color: #a568cc;
+      color: white;
+    }
+
+    .btn-duo-purple:hover {
+      background-color: #d899ff;
+    }
+
+    /* Card Styles */
+    .card-duo {
+      background-color: white;
+      border: 2px solid #e5e5e5;
+      border-radius: 1.5rem;
+      box-shadow: none;
+      /* Flat design */
+    }
+
+    /* Input Styles */
+    .input-duo {
+      background-color: #f7f7f7;
+      border: 2px solid #e5e5e5;
+      border-radius: 1rem;
+      transition: all 0.2s;
+      color: #4b4b4b;
+      font-weight: 700;
+    }
+
+    .input-duo:focus {
+      background-color: white;
+      border-color: #1cb0f6;
+      outline: none;
+    }
+
+    .input-duo::placeholder {
+      color: #afafaf;
+      font-weight: 500;
+    }
+
+    /* Typography */
+    .text-duo-gray {
+      color: #afafaf;
+    }
+
+    .text-duo-dark {
+      color: #4b4b4b;
+    }
+
+    /* Custom Scrollbar for inner content */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Float Animation - Keep it but maybe subtler */
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-6px);
+      }
+    }
+
+    .float-anim {
+      animation: float 3s ease-in-out infinite;
+    }
+  </style>
+  <script type="module" crossorigin src="/memo/assets/index-DWW1Nxss.js"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-900">
+  <div id="root"></div>
+</body>
+
+</html>
