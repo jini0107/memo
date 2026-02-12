@@ -9,17 +9,29 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+// ErrorBoundary Props 인터페이스 정의
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
 
-  static getDerivedStateFromError(error: Error) {
+// ErrorBoundary State 인터페이스 정의
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  // state를 클래스 프로퍼티로 명시적 선언
+  state: ErrorBoundaryState = {
+    hasError: false,
+    error: null
+  };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     console.error("Uncaught error:", error, errorInfo);
   }
 

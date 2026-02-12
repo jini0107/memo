@@ -26,10 +26,6 @@ const ItemForm: React.FC<ItemFormProps> = ({
     dispatch({ type: 'UPDATE_FORM', payload: updates });
   };
 
-  // Refs for file inputs (one pair for each slot)
-  const cameraInputRefs = [React.useRef<HTMLInputElement>(null), React.useRef<HTMLInputElement>(null)];
-  const galleryInputRefs = [React.useRef<HTMLInputElement>(null), React.useRef<HTMLInputElement>(null)];
-
   return (
     <form onSubmit={onSubmit} className="space-y-6 pt-2">
       <div className="flex flex-col items-center">
@@ -47,8 +43,11 @@ const ItemForm: React.FC<ItemFormProps> = ({
               ) : (
                 <div className="flex flex-col items-center gap-3">
                   <div className="flex gap-2">
-                    {/* Camera Button directly wrapped in label for reliability */}
-                    <label className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-blue cursor-pointer">
+                    {/* 📷 카메라 버튼 - 기본 카메라 앱으로 사진 촬영 */}
+                    <label
+                      className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-blue cursor-pointer"
+                      title="카메라로 촬영"
+                    >
                       <i className="fas fa-camera text-xl"></i>
                       <input
                         type="file"
@@ -59,8 +58,11 @@ const ItemForm: React.FC<ItemFormProps> = ({
                       />
                     </label>
 
-                    {/* Gallery Button directly wrapped in label */}
-                    <label className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-green cursor-pointer">
+                    {/* 🖼️ 갤러리 버튼 - 갤러리에서 사진 선택 */}
+                    <label
+                      className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-green cursor-pointer"
+                      title="갤러리에서 선택"
+                    >
                       <i className="fas fa-image text-xl"></i>
                       <input
                         type="file"

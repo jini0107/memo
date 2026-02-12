@@ -153,7 +153,12 @@ const App: React.FC = () => {
     }
   };
 
-  // Helper to compress image
+  /**
+   * 이미지 압축 함수
+   * - 카메라 촬영 또는 갤러리에서 선택한 모든 이미지를 400px로 리사이즈
+   * - 가로/세로 중 긴 쪽을 기준으로 400px로 조정
+   * - JPEG 품질 60%로 압축하여 파일 크기 최적화
+   */
   const compressImage = (base64Str: string, maxWidth = 400, quality = 0.6): Promise<string> => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -162,12 +167,14 @@ const App: React.FC = () => {
         let width = img.width;
         let height = img.height;
 
+        // 가로가 더 긴 경우
         if (width > height) {
           if (width > maxWidth) {
             height *= maxWidth / width;
             width = maxWidth;
           }
         } else {
+          // 세로가 더 긴 경우
           if (height > maxWidth) {
             width *= maxWidth / height;
             height = maxWidth;
@@ -189,6 +196,13 @@ const App: React.FC = () => {
     });
   };
 
+  /**
+   * 이미지 업로드 핸들러
+   * - 카메라 버튼: capture="environment" 속성으로 기본 카메라 앱 실행
+   * - 갤러리 버튼: 갤러리에서 사진 선택
+   * - 모든 이미지는 자동으로 400px로 리사이즈됨
+   * - slot 0 (아이템 포토)의 경우 AI 분석 자동 실행
+   */
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -196,13 +210,14 @@ const App: React.FC = () => {
       reader.onloadend = async () => {
         const rawDataUrl = reader.result as string;
 
-        // Compress Image
+        // 🔧 이미지를 400px로 강제 리사이즈
         const compressedDataUrl = await compressImage(rawDataUrl, 400, 0.6);
 
         const newImages = [...formState.itemImages];
         newImages[slot] = compressedDataUrl;
         dispatch({ type: 'UPDATE_FORM', payload: { itemImages: newImages } });
 
+        // 첫 번째 슬롯(아이템 포토)인 경우 AI 분석 실행
         if (slot === 0) {
           performImageAnalysis(compressedDataUrl);
         }
