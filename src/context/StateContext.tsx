@@ -117,7 +117,11 @@ const appReducer = (state: AppState, action: Action): AppState => {
     case 'TOGGLE_EDIT_MODE':
       return { ...state, isEditMode: action.payload };
     case 'UPDATE_FORM':
-      return { ...state, formState: { ...state.formState, ...action.payload } };
+      console.log('🔄 UPDATE_FORM 액션 실행:', action.payload);
+      console.log('📦 현재 formState:', state.formState);
+      const newFormState = { ...state.formState, ...action.payload };
+      console.log('📦 새로운 formState:', newFormState);
+      return { ...state, formState: newFormState };
     case 'RESET_FORM':
       return {
         ...state,

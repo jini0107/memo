@@ -204,26 +204,85 @@ const App: React.FC = () => {
    * - slot 0 (아이템 포토)의 경우 AI 분석 자동 실행
    */
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const rawDataUrl = reader.result as string;
+    console.log('📸 handleImageUpload 호출됨 - slot:', slot);
 
+    const file = e.target.files?.[0];
+    console.log('📁 선택된 파일:', file);
+
+    if (!file) {
+      console.warn('⚠️ 파일이 선택되지 않았습니다.');
+      return;
+    }
+
+    console.log('📋 파일 정보:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      lastModified: new Date(file.lastModified)
+    });
+
+    const reader = new FileReader();
+
+    reader.onloadstart = () => {
+      console.log('🔄 파일 읽기 시작...');
+    };
+
+    reader.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percentLoaded = Math.round((e.loaded / e.total) * 100);
+        console.log(`📊 읽기 진행률: ${percentLoaded}%`);
+      }
+    };
+
+    reader.onerror = (error) => {
+      console.error('❌ 파일 읽기 오류:', error);
+      alert('파일을 읽는 중 오류가 발생했습니다.');
+    };
+
+    reader.onloadend = async () => {
+      console.log('✅ 파일 읽기 완료');
+
+      const rawDataUrl = reader.result as string;
+
+      if (!rawDataUrl) {
+        console.error('❌ 파일 데이터가 비어있습니다.');
+        return;
+      }
+
+      console.log('📏 원본 이미지 크기:', rawDataUrl.length, 'bytes');
+
+      try {
         // 🔧 이미지를 400px로 강제 리사이즈
+        console.log('🔧 이미지 압축 시작...');
         const compressedDataUrl = await compressImage(rawDataUrl, 400, 0.6);
+        console.log('✅ 이미지 압축 완료');
+        console.log('📏 압축된 이미지 크기:', compressedDataUrl.length, 'bytes');
 
         const newImages = [...formState.itemImages];
         newImages[slot] = compressedDataUrl;
+
+        console.log('💾 이미지 저장 중... slot:', slot);
+        console.log('📦 현재 이미지 배열:', newImages.map((img, i) => `[${i}]: ${img ? '있음' : '없음'}`));
+
         dispatch({ type: 'UPDATE_FORM', payload: { itemImages: newImages } });
+        console.log('✅ 이미지가 formState에 저장되었습니다!');
 
         // 첫 번째 슬롯(아이템 포토)인 경우 AI 분석 실행
         if (slot === 0) {
+          console.log('🤖 AI 분석 시작...');
           performImageAnalysis(compressedDataUrl);
         }
-      };
-      reader.readAsDataURL(file);
-    }
+      } catch (error) {
+        console.error('❌ 이미지 처리 중 오류:', error);
+        alert('이미지 처리 중 오류가 발생했습니다.');
+      }
+    };
+
+    console.log('📖 파일 읽기 시작...');
+    reader.readAsDataURL(file);
+
+    // input 값을 리셋하여 같은 파일을 다시 선택할 수 있도록 함
+    e.target.value = '';
   };
 
   const removeImage = (index: number) => {
