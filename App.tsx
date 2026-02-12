@@ -380,108 +380,107 @@ const App: React.FC = () => {
   ];
 
   return (
-    // 1. 최상위 배경 (화면 전체)
-    <div className="fixed inset-0 bg-[#e5e5e5] flex justify-center p-4">
-      {/* 2. 메인 카드 박스 */}
-      <div className="w-full max-w-md bg-white rounded-[2rem] overflow-hidden flex flex-col border-x-4 border-b-4 border-[#e5e5e5] relative h-full ring-4 ring-white/50">
+    // 📱 모바일 풀스크린 레이아웃
+    <div className="fixed inset-0 bg-white flex flex-col safe-top safe-bottom">
+      {/* 헤더 - 고정 */}
+      <header className="px-4 py-4 flex justify-between items-center bg-white border-b-2 border-gray-100 shrink-0 safe-left safe-right">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-duo-green flex items-center justify-center border-b-4 border-[#58a700] active:border-b-0 active:translate-y-1 transition-all touch-feedback">
+            <i className="fas fa-box-open text-white text-xl"></i>
+          </div>
+          <h1 className="text-2xl font-black tracking-tight text-[#4b4b4b]">
+            WhereIsIt
+          </h1>
+        </div>
 
-        {/* 내부 스크롤 영역 */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide relative w-full bg-white">
-          {/* 헤더 */}
-          <header className="px-6 py-6 sticky top-0 z-50 flex justify-between items-center bg-white/95 backdrop-blur-sm border-b-2 border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-duo-green flex items-center justify-center border-b-4 border-[#58a700] active:border-b-0 active:translate-y-1 transition-all">
-                <i className="fas fa-box-open text-white text-lg"></i>
-              </div>
-              <h1 className="text-xl font-black tracking-tight text-[#4b4b4b] mt-1 font-sans">
-                WhereIsIt
-              </h1>
+        <button
+          onClick={() => dispatch({ type: 'TOGGLE_SETTINGS', payload: true })}
+          className="w-12 h-12 rounded-xl bg-white border-2 border-gray-200 border-b-4 text-gray-400 hover:bg-gray-50 hover:text-duo-blue active:border-b-2 active:translate-y-[2px] transition-all flex items-center justify-center touch-feedback"
+        >
+          <i className="fas fa-cog text-xl"></i>
+        </button>
+      </header>
+
+      {/* 검색창 */}
+      <div className="px-4 py-3 bg-white shrink-0 safe-left safe-right">
+        <SearchBar />
+      </div>
+
+      {/* 메인 컨텐츠 - 스크롤 가능 */}
+      <div className="flex-1 overflow-y-auto mobile-scroll px-4 pb-24 safe-left safe-right">
+        {/* 리스트 헤더 */}
+        <div className="flex justify-between items-center mb-4 mt-2">
+          <h3 className="font-extrabold text-[#4b4b4b] text-lg">
+            My Items
+          </h3>
+
+          <div className="flex gap-2">
+            <div className="flex bg-gray-100 rounded-xl p-1 border-2 border-gray-200">
+              {sortOptions.map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => dispatch({ type: 'SET_SORT_OPTION', payload: opt.id })}
+                  className={`text-xs px-3 py-2 rounded-lg font-bold transition-all touch-feedback ${sortOption === opt.id
+                    ? 'bg-white text-duo-blue shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
 
-            <button
-              onClick={() => dispatch({ type: 'TOGGLE_SETTINGS', payload: true })}
-              className="w-10 h-10 rounded-xl bg-white border-2 border-gray-200 border-b-4 text-gray-400 hover:bg-gray-50 hover:text-duo-blue active:border-b-2 active:translate-y-[2px] active:mt-[2px] transition-all flex items-center justify-center"
-            >
-              <i className="fas fa-cog text-lg"></i>
-            </button>
-          </header>
-
-          {/* 검색창 컴포넌트 */}
-          <SearchBar />
-
-          <div className="px-6 pb-24">
-            {/* 리스트 헤더 */}
-            <div className="flex justify-between items-center mb-6 mt-2">
-              <h3 className="font-extrabold text-[#4b4b4b] text-lg">
-                My Items
-              </h3>
-
-              <div className="flex gap-2">
-                <div className="flex bg-gray-100 rounded-xl p-1 border-2 border-gray-200">
-                  {sortOptions.map(opt => (
-                    <button
-                      key={opt.id}
-                      onClick={() => dispatch({ type: 'SET_SORT_OPTION', payload: opt.id })}
-                      className={`text-xs px-3 py-1.5 rounded-lg font-bold transition-all ${sortOption === opt.id
-                        ? 'bg-white text-duo-blue shadow-sm'
-                        : 'text-gray-400 hover:text-gray-600'
-                        }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex bg-gray-100 rounded-xl p-1 border-2 border-gray-200">
-                  <button
-                    onClick={() => dispatch({ type: 'SET_VIEW_MODE', payload: 'card' })}
-                    className={`p-1.5 w-8 rounded-lg transition-all flex items-center justify-center ${state.viewMode === 'card' ? 'bg-white shadow-sm text-duo-green' : 'text-gray-400'}`}
-                  >
-                    <i className="fas fa-th-large"></i>
-                  </button>
-                  <button
-                    onClick={() => dispatch({ type: 'SET_VIEW_MODE', payload: 'table' })}
-                    className={`p-1.5 w-8 rounded-lg transition-all flex items-center justify-center ${state.viewMode === 'table' ? 'bg-white shadow-sm text-duo-green' : 'text-gray-400'}`}
-                  >
-                    <i className="fas fa-bars"></i>
-                  </button>
-                </div>
-              </div>
+            <div className="flex bg-gray-100 rounded-xl p-1 border-2 border-gray-200">
+              <button
+                onClick={() => dispatch({ type: 'SET_VIEW_MODE', payload: 'card' })}
+                className={`p-2 w-10 rounded-lg transition-all flex items-center justify-center touch-feedback ${state.viewMode === 'card' ? 'bg-white shadow-sm text-duo-green' : 'text-gray-400'}`}
+              >
+                <i className="fas fa-th-large"></i>
+              </button>
+              <button
+                onClick={() => dispatch({ type: 'SET_VIEW_MODE', payload: 'table' })}
+                className={`p-2 w-10 rounded-lg transition-all flex items-center justify-center touch-feedback ${state.viewMode === 'table' ? 'bg-white shadow-sm text-duo-green' : 'text-gray-400'}`}
+              >
+                <i className="fas fa-bars"></i>
+              </button>
             </div>
-
-            {/* 아이템 목록 */}
-            <ItemList items={filteredItems} />
           </div>
         </div>
 
-        {/* FAB (플로팅 추가 버튼) */}
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none z-40">
-          <button
-            onClick={() => { resetForm(); dispatch({ type: 'TOGGLE_ADDING', payload: true }); }}
-            className="pointer-events-auto btn-3d btn-duo-green w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all border-4 border-white"
-          >
-            <i className="fas fa-plus"></i>
-          </button>
-        </div>
-
+        {/* 아이템 목록 */}
+        <ItemList items={filteredItems} />
       </div>
 
-      {/* 새 아이템 추가 모달 */}
+      {/* FAB (플로팅 추가 버튼) - 안전 영역 고려 */}
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none z-40 safe-bottom">
+        <button
+          onClick={() => { resetForm(); dispatch({ type: 'TOGGLE_ADDING', payload: true }); }}
+          className="pointer-events-auto btn-3d btn-duo-green w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all border-4 border-white touch-feedback"
+        >
+          <i className="fas fa-plus"></i>
+        </button>
+      </div>
+
+      {/* 새 아이템 추가 모달 - 바텀 시트 스타일 */}
       {isAdding && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white w-full max-w-md rounded-[2rem] p-6 animate-slide-up shadow-2xl h-[90%] flex flex-col relative border-x-4 border-t-4 border-[#e5e5e5]">
+        <div className="fullscreen-modal animate-fade-in" onClick={() => dispatch({ type: 'TOGGLE_ADDING', payload: false })}>
+          <div
+            className="absolute inset-x-0 bottom-0 bg-white rounded-t-[2rem] p-6 animate-slide-up shadow-2xl flex flex-col safe-bottom safe-left safe-right"
+            style={{ maxHeight: '90vh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-6 shrink-0">
               <button
-                onClick={() => { dispatch({ type: 'TOGGLE_ADDING', payload: false }); }}
-                className="btn-3d w-10 h-10 rounded-xl bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center hover:bg-gray-50 active:border-b-0"
+                onClick={() => dispatch({ type: 'TOGGLE_ADDING', payload: false })}
+                className="btn-3d w-12 h-12 rounded-xl bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center hover:bg-gray-50 active:border-b-0 touch-feedback"
               >
-                <i className="fas fa-times"></i>
+                <i className="fas fa-times text-xl"></i>
               </button>
-              <h2 className="text-xl font-black text-[#4b4b4b]">ADD ITEM</h2>
-              <div className="w-10"></div>
+              <h2 className="text-2xl font-black text-[#4b4b4b]">ADD ITEM</h2>
+              <div className="w-12"></div>
             </div>
 
-            <div className="overflow-y-auto flex-1 px-1 scrollbar-hide">
+            <div className="overflow-y-auto flex-1 px-1 mobile-scroll">
               <ItemForm
                 onSubmit={handleAddItem}
                 submitLabel="SAVE ITEM"
@@ -495,24 +494,28 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* 아이템 상세 모달 */}
+      {/* 아이템 상세 모달 - 바텀 시트 스타일 */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center backdrop-blur-sm p-4">
-          <div className="bg-white w-full max-w-md rounded-[2rem] p-6 animate-slide-up shadow-2xl h-[90%] flex flex-col relative border-x-4 border-t-4 border-[#e5e5e5]">
+        <div className="fullscreen-modal animate-fade-in" onClick={() => { dispatch({ type: 'SET_SELECTED_ITEM', payload: null }); dispatch({ type: 'TOGGLE_EDIT_MODE', payload: false }); }}>
+          <div
+            className="absolute inset-x-0 bottom-0 bg-white rounded-t-[2rem] p-6 animate-slide-up shadow-2xl flex flex-col safe-bottom safe-left safe-right"
+            style={{ maxHeight: '90vh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-6 shrink-0">
               <button
                 onClick={() => { dispatch({ type: 'SET_SELECTED_ITEM', payload: null }); dispatch({ type: 'TOGGLE_EDIT_MODE', payload: false }); }}
-                className="btn-3d w-10 h-10 rounded-xl bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center hover:bg-gray-50"
+                className="btn-3d w-12 h-12 rounded-xl bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center hover:bg-gray-50 touch-feedback"
               >
-                <i className="fas fa-arrow-left"></i>
+                <i className="fas fa-arrow-left text-xl"></i>
               </button>
-              <h2 className="text-xl font-black text-[#4b4b4b]">
+              <h2 className="text-2xl font-black text-[#4b4b4b]">
                 {isEditMode ? 'EDIT' : 'DETAILS'}
               </h2>
-              <div className="w-10"></div>
+              <div className="w-12"></div>
             </div>
 
-            <div className="overflow-y-auto flex-1 px-1 scrollbar-hide">
+            <div className="overflow-y-auto flex-1 px-1 mobile-scroll">
               {isEditMode ? (
                 <ItemForm
                   onSubmit={handleUpdateItem}

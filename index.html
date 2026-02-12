@@ -3,7 +3,26 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- 📱 모바일 최적화 메타 태그 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+  <!-- PWA 설정 -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WhereIsIt">
+
+  <!-- 테마 컬러 -->
+  <meta name="theme-color" content="#58cc02">
+  <meta name="msapplication-navbutton-color" content="#58cc02">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#58cc02">
+
+  <!-- SEO -->
+  <meta name="description" content="물건의 위치를 기억하는 스마트한 메모리 도우미">
+  <meta name="keywords" content="메모, 위치 추적, 물건 찾기, 정리">
+
   <title>WhereIsIt - Your Memory Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,12 +76,37 @@
   <style>
     :root {
       --bg-color: #ffffff;
+      --safe-area-inset-top: env(safe-area-inset-top);
+      --safe-area-inset-bottom: env(safe-area-inset-bottom);
+      --safe-area-inset-left: env(safe-area-inset-left);
+      --safe-area-inset-right: env(safe-area-inset-right);
+    }
+
+    * {
+      /* 터치 최적화 */
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
     }
 
     body {
       font-family: 'Outfit', sans-serif;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       background-color: #f7f7f7;
+      /* 모바일 스크롤 최적화 */
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: none;
+      /* 바운스 효과 제거 */
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #root {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
     }
 
     /* 3D Button Components */
@@ -70,6 +114,9 @@
       transition: all 0.1s;
       border-bottom-width: 4px;
       transform: translateY(0);
+      /* 터치 영역 확대 */
+      min-height: 44px;
+      min-width: 44px;
     }
 
     .btn-3d:active {
@@ -144,6 +191,9 @@
       transition: all 0.2s;
       color: #4b4b4b;
       font-weight: 700;
+      /* 모바일 입력 최적화 */
+      font-size: 16px;
+      /* iOS 자동 줌 방지 */
     }
 
     .input-duo:focus {
@@ -174,6 +224,45 @@
     .scrollbar-hide {
       -ms-overflow-style: none;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* 모바일 스크롤 개선 */
+    .mobile-scroll {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
+
+    /* 바텀 시트 애니메이션 */
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .animate-slide-up {
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.2s ease-in-out;
     }
 
     /* Float Animation - Keep it but maybe subtler */
@@ -191,6 +280,43 @@
 
     .float-anim {
       animation: float 3s ease-in-out infinite;
+    }
+
+    /* 터치 피드백 */
+    .touch-feedback:active {
+      opacity: 0.7;
+      transform: scale(0.98);
+    }
+
+    /* 안전 영역 처리 */
+    .safe-top {
+      padding-top: var(--safe-area-inset-top);
+    }
+
+    .safe-bottom {
+      padding-bottom: var(--safe-area-inset-bottom);
+    }
+
+    .safe-left {
+      padding-left: var(--safe-area-inset-left);
+    }
+
+    .safe-right {
+      padding-right: var(--safe-area-inset-right);
+    }
+
+    /* 풀스크린 모달 */
+    .fullscreen-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+    }
+
+    /* 이미지 로딩 최적화 */
+    img {
+      content-visibility: auto;
     }
   </style>
   <script type="module" src="/index.tsx"></script>
