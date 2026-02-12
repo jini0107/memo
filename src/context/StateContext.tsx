@@ -150,43 +150,78 @@ export const AppContext = createContext<{ state: AppState; dispatch: Dispatch<Ac
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Load state from localStorage on initial render
+  // Load state from localStorage AND Supabase on initial render
   useEffect(() => {
-    try {
-      const savedItems = localStorage.getItem('whereisit_items');
-      const savedConfig = {
-        locTypes: JSON.parse(localStorage.getItem('config_loc_types') || 'null'),
-        homeLocs: JSON.parse(localStorage.getItem('config_home_locs') || 'null'),
-        officeLocs: JSON.parse(localStorage.getItem('config_office_locs') || 'null'),
-        digitalLocs: JSON.parse(localStorage.getItem('config_digital_locs') || 'null'),
-        categories: JSON.parse(localStorage.getItem('config_categories') || 'null'),
-      };
+    const initializeData = async () => {
+      try {
+        // 1. Local Storage First (Optimistic Load)
+        const savedItems = localStorage.getItem('whereisit_items');
+        const savedConfig = {
+          locTypes: JSON.parse(localStorage.getItem('config_loc_types') || 'null'),
+          homeLocs: JSON.parse(localStorage.getItem('config_home_locs') || 'null'),
+          officeLocs: JSON.parse(localStorage.getItem('config_office_locs') || 'null'),
+          digitalLocs: JSON.parse(localStorage.getItem('config_digital_locs') || 'null'),
+          categories: JSON.parse(localStorage.getItem('config_categories') || 'null'),
+        };
 
-      const payload: Partial<AppState> = {};
-      if (savedItems) {
-        payload.items = JSON.parse(savedItems);
+        const payload: Partial<AppState> = {};
+        if (savedItems) {
+          payload.items = JSON.parse(savedItems);
+        }
+
+        const config: Partial<AppState['config']> = {};
+        if (savedConfig.locTypes) config.locTypes = savedConfig.locTypes;
+        if (savedConfig.homeLocs) config.homeLocs = savedConfig.homeLocs;
+        if (savedConfig.officeLocs) config.officeLocs = savedConfig.officeLocs;
+        if (savedConfig.digitalLocs) config.digitalLocs = savedConfig.digitalLocs;
+        if (savedConfig.categories) config.categories = savedConfig.categories;
+
+        if (Object.keys(config).length > 0) {
+          payload.config = { ...initialState.config, ...config };
+        }
+
+        dispatch({ type: 'INITIALIZE_STATE', payload });
+
+        // 2. Fetch from Supabase (Source of Truth)
+        // Dynamic import to avoid circular dependency issues if any, though standard import is fine usually.
+        // We'll use standard import at top of file, but for now let's assume it's available.
+        // wait, I need to import supabaseService at the top.
+        // Since I can't edit imports with replace_file_content easily without context, I'll use multi_replace or stick to a layout where imports are visible.
+        // I'll assume I can add the import. Actually, I can use require or dynamic import if needed, but standard import is better.
+        // Let's use a separate tool call to add the import first.
+      } catch (e) {
+        console.error('Failed to load state', e);
       }
+    };
 
-      const config: Partial<AppState['config']> = {};
-      if (savedConfig.locTypes) config.locTypes = savedConfig.locTypes;
-      if (savedConfig.homeLocs) config.homeLocs = savedConfig.homeLocs;
-      if (savedConfig.officeLocs) config.officeLocs = savedConfig.officeLocs;
-      if (savedConfig.digitalLocs) config.digitalLocs = savedConfig.digitalLocs;
-      if (savedConfig.categories) config.categories = savedConfig.categories;
-
-      if (Object.keys(config).length > 0) {
-        payload.config = { ...initialState.config, ...config };
-      }
-
-      dispatch({ type: 'INITIALIZE_STATE', payload });
-    } catch (e) {
-      console.error('Failed to load state from localStorage', e);
-    }
+    initializeData();
   }, []);
+
+  // Fetch from Supabase separately to keep the function clean
+  useEffect(() => {
+    import('../../services/supabaseService').then(({ supabaseService }) => {
+      supabaseService.fetchItems().then(items => {
+        if (items && items.length > 0) {
+          console.log("Loaded items from Supabase:", items.length);
+          dispatch({ type: 'SET_ITEMS', payload: items });
+        }
+      }).catch(err => console.error("Supabase fetch failed", err));
+    });
+  }, []);
+
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('whereisit_items', JSON.stringify(state.items));
+    try {
+      localStorage.setItem('whereisit_items', JSON.stringify(state.items));
+    } catch (e) {
+      if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+        console.warn("LocalStorage is full. Items will only be saved to the cloud (Supabase).");
+        // Optional: clear some old data or just ignore
+      } else {
+        console.error("Failed to save items to localStorage", e);
+      }
+    }
   }, [state.items]);
 
   useEffect(() => {

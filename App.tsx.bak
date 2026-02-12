@@ -10,7 +10,6 @@ import Settings from './components/Settings';
 import { AppContext } from './src/context/StateContext';
 import { exportItemsToExcel } from './services/excelService';
 import { dataService } from './services/dataService';
-import { supabaseService } from './services/supabaseService';
 
 type SortOption = 'latest' | 'name' | 'category';
 
@@ -38,7 +37,7 @@ const App: React.FC = () => {
     }
   }, [searchTerm, dispatch]);
 
-  const handleAddItem = async (e: React.FormEvent) => {
+  const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     const fullPath = `${formState.locType} > ${formState.locDetail}`;
     const newItem: Item = {
@@ -50,23 +49,12 @@ const App: React.FC = () => {
       imageUrls: formState.itemImages,
       updatedAt: Date.now()
     };
-
-    // Optimistic Update
-    const updatedItems = [newItem, ...items];
-    dispatch({ type: 'SET_ITEMS', payload: updatedItems });
+    dispatch({ type: 'SET_ITEMS', payload: [newItem, ...items] });
     dispatch({ type: 'TOGGLE_ADDING', payload: false });
     dispatch({ type: 'RESET_FORM' });
-
-    // Save to Supabase
-    try {
-      await supabaseService.addItem(newItem);
-    } catch (error: any) {
-      console.error("Failed to save to Supabase", error);
-      alert(`클라우드 저장에 실패했습니다. (로컬에는 저장됨)\n\n상세 에러: ${error.message || JSON.stringify(error)}`);
-    }
   };
 
-  const handleUpdateItem = async (e: React.FormEvent) => {
+  const handleUpdateItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedItem) return;
     const fullPath = `${formState.locType} > ${formState.locDetail}`;
@@ -79,20 +67,10 @@ const App: React.FC = () => {
       imageUrls: formState.itemImages,
       updatedAt: Date.now()
     };
-
-    // Optimistic Update
     const newItems = items.map(i => i.id === selectedItem.id ? updatedItem : i);
     dispatch({ type: 'SET_ITEMS', payload: newItems });
     dispatch({ type: 'SET_SELECTED_ITEM', payload: updatedItem });
     dispatch({ type: 'TOGGLE_EDIT_MODE', payload: false });
-
-    // Update in Supabase
-    try {
-      await supabaseService.updateItem(updatedItem);
-    } catch (error: any) {
-      console.error("Failed to update in Supabase", error);
-      alert(`클라우드 업데이트에 실패했습니다. (로컬에는 반영됨)\n\n상세 에러: ${error.message || JSON.stringify(error)}`);
-    }
   };
 
   const resetForm = () => {
@@ -159,58 +137,18 @@ const App: React.FC = () => {
     }
   };
 
-  // Helper to compress image
-  const compressImage = (base64Str: string, maxWidth = 400, quality = 0.6): Promise<string> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.src = base64Str;
-      img.onload = () => {
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxWidth) {
-            width *= maxWidth / height;
-            height = maxWidth;
-          }
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        } else {
-          resolve(base64Str); // Fallback
-        }
-      };
-      img.onerror = () => resolve(base64Str); // Fallback
-    });
-  };
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && activeCameraSlot !== null) {
       const reader = new FileReader();
-      reader.onloadend = async () => {
-        const rawDataUrl = reader.result as string;
-
-        // Compress Image
-        const compressedDataUrl = await compressImage(rawDataUrl, 400, 0.6);
-
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
         const newImages = [...formState.itemImages];
-        newImages[activeCameraSlot] = compressedDataUrl;
+        newImages[activeCameraSlot] = dataUrl;
         dispatch({ type: 'UPDATE_FORM', payload: { itemImages: newImages } });
         stopCamera();
         if (activeCameraSlot === 0) {
-          performImageAnalysis(compressedDataUrl);
+          performImageAnalysis(dataUrl);
         }
       };
       reader.readAsDataURL(file);
@@ -242,7 +180,7 @@ const App: React.FC = () => {
     dispatch({ type: 'SET_CAMERA_ACTIVE', payload: { isActive: false, slot: null } });
   };
 
-  const capturePhoto = async () => {
+  const capturePhoto = () => {
     if (videoRef.current && canvasRef.current && activeCameraSlot !== null) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -251,18 +189,13 @@ const App: React.FC = () => {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        // Initial raw capture
-        const rawDataUrl = canvas.toDataURL('image/jpeg');
-
-        // Compress
-        const compressedDataUrl = await compressImage(rawDataUrl, 400, 0.5); // Slightly more compression for camera
-
+        const dataUrl = canvas.toDataURL('image/jpeg');
         const newImages = [...formState.itemImages];
-        newImages[activeCameraSlot] = compressedDataUrl;
+        newImages[activeCameraSlot] = dataUrl;
         dispatch({ type: 'UPDATE_FORM', payload: { itemImages: newImages } });
         stopCamera();
         if (activeCameraSlot === 0) {
-          performImageAnalysis(compressedDataUrl);
+          performImageAnalysis(dataUrl);
         }
       }
     }
@@ -295,20 +228,11 @@ const App: React.FC = () => {
     });
   }, [items, searchTerm, sortOption, aiSearchResults]);
 
-  const deleteItem = async (id: string) => {
+  const deleteItem = (id: string) => {
     if (confirm(DELETE_CONFIRM_MESSAGE)) {
-      // Optimistic Delete
       dispatch({ type: 'SET_ITEMS', payload: items.filter(i => i.id !== id) });
       if (selectedItem?.id === id) {
         dispatch({ type: 'SET_SELECTED_ITEM', payload: null });
-      }
-
-      // Delete from Supabase
-      try {
-        await supabaseService.deleteItem(id);
-      } catch (error: any) {
-        console.error("Failed to delete from Supabase", error);
-        alert(`클라우드 삭제에 실패했습니다. (로컬에서는 삭제됨)\n\n상세 에러: ${error.message || JSON.stringify(error)}`);
       }
     }
   };
