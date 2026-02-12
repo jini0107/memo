@@ -6,14 +6,8 @@ interface ItemFormProps {
   submitLabel: string;
   isAnalyzing: boolean;
   performNameAnalysis: () => void;
-  startCamera: (slot: number) => void;
-  stopCamera: () => void;
-  capturePhoto: () => void;
   removeImage: (index: number) => void;
-  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  videoRef: React.RefObject<HTMLVideoElement>;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>, slot: number) => void;
 }
 
 const ItemForm: React.FC<ItemFormProps> = ({
@@ -21,47 +15,29 @@ const ItemForm: React.FC<ItemFormProps> = ({
   submitLabel,
   isAnalyzing,
   performNameAnalysis,
-  startCamera,
-  stopCamera,
-  capturePhoto,
   removeImage,
   handleImageUpload,
-  videoRef,
-  canvasRef,
-  fileInputRef,
 }) => {
   const { state, dispatch } = useContext(AppContext);
-  const { formState, isCameraActive, activeCameraSlot, config } = state;
+  const { formState, config } = state;
   const { itemName, locType, locDetail, itemNotes, itemImages } = formState;
 
   const updateForm = (updates: Partial<typeof formState>) => {
     dispatch({ type: 'UPDATE_FORM', payload: updates });
   };
 
-  const setActiveCameraSlot = (slot: number | null) => {
-    dispatch({ type: 'SET_CAMERA_ACTIVE', payload: { isActive: state.isCameraActive, slot } });
-  }
+  // Refs for file inputs (one pair for each slot)
+  const cameraInputRefs = [React.useRef<HTMLInputElement>(null), React.useRef<HTMLInputElement>(null)];
+  const galleryInputRefs = [React.useRef<HTMLInputElement>(null), React.useRef<HTMLInputElement>(null)];
 
   return (
     <form onSubmit={onSubmit} className="space-y-6 pt-2">
       <div className="flex flex-col items-center">
-        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-        <canvas ref={canvasRef} className="hidden" />
-
         <div className="w-full grid grid-cols-2 gap-4">
           {[0, 1].map((idx) => (
             <div key={idx} className="aspect-square rounded-2xl bg-gray-50 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group hover:bg-gray-100 hover:border-duo-blue active:border-solid transition-all">
-              {isCameraActive && activeCameraSlot === idx ? (
-                <div className="w-full h-full relative">
-                  <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-                  <button type="button" onClick={capturePhoto} className="absolute bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-white rounded-full border-4 border-gray-200 flex items-center justify-center active:scale-95 shadow-xl">
-                    <div className="w-10 h-10 bg-duo-red rounded-full"></div>
-                  </button>
-                  <button type="button" onClick={stopCamera} className="absolute top-2 right-2 bg-black/50 text-white w-8 h-8 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-times"></i>
-                  </button>
-                </div>
-              ) : itemImages[idx] ? (
+
+              {itemImages[idx] ? (
                 <div className="w-full h-full relative group">
                   <img src={itemImages[idx]} className="w-full h-full object-cover" alt="img" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
@@ -71,12 +47,28 @@ const ItemForm: React.FC<ItemFormProps> = ({
               ) : (
                 <div className="flex flex-col items-center gap-3">
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => startCamera(idx)} className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-blue">
+                    {/* Camera Button directly wrapped in label for reliability */}
+                    <label className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-blue cursor-pointer">
                       <i className="fas fa-camera text-xl"></i>
-                    </button>
-                    <button type="button" onClick={() => { setActiveCameraSlot(idx); fileInputRef.current?.click(); }} className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-green">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, idx)}
+                      />
+                    </label>
+
+                    {/* Gallery Button directly wrapped in label */}
+                    <label className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-green cursor-pointer">
                       <i className="fas fa-image text-xl"></i>
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, idx)}
+                      />
+                    </label>
                   </div>
                   <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{idx === 0 ? 'ITEM PHOTO' : 'PLACE PHOTO'}</span>
                 </div>
