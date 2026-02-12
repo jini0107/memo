@@ -20,16 +20,11 @@ const App: React.FC = () => {
   const {
     items, searchTerm, sortOption, isAdding, selectedItem, isEditMode,
     formState, isAnalyzing, aiSearchResults, isSearchingAI,
-    isCameraActive, activeCameraSlot, config, isSettingsOpen
+    config, isSettingsOpen
   } = state;
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-
   useEffect(() => {
-    return () => stopCamera();
+    // Initialization or cleanup if needed
   }, []);
 
   useEffect(() => {
@@ -97,7 +92,6 @@ const App: React.FC = () => {
 
   const resetForm = () => {
     dispatch({ type: 'RESET_FORM' });
-    stopCamera();
   };
 
   const openEditMode = () => {
@@ -195,9 +189,9 @@ const App: React.FC = () => {
     });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number) => {
     const file = e.target.files?.[0];
-    if (file && activeCameraSlot !== null) {
+    if (file) {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const rawDataUrl = reader.result as string;
@@ -206,65 +200,14 @@ const App: React.FC = () => {
         const compressedDataUrl = await compressImage(rawDataUrl, 400, 0.6);
 
         const newImages = [...formState.itemImages];
-        newImages[activeCameraSlot] = compressedDataUrl;
+        newImages[slot] = compressedDataUrl;
         dispatch({ type: 'UPDATE_FORM', payload: { itemImages: newImages } });
-        stopCamera();
-        if (activeCameraSlot === 0) {
+
+        if (slot === 0) {
           performImageAnalysis(compressedDataUrl);
         }
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const startCamera = async (slot: number) => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-        audio: false
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-      dispatch({ type: 'SET_CAMERA_ACTIVE', payload: { isActive: true, slot: slot } });
-    } catch (err) {
-      console.error("Camera access denied", err);
-      alert("카메라에 접근할 수 없습니다.");
-    }
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    dispatch({ type: 'SET_CAMERA_ACTIVE', payload: { isActive: false, slot: null } });
-  };
-
-  const capturePhoto = async () => {
-    if (videoRef.current && canvasRef.current && activeCameraSlot !== null) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        // Initial raw capture
-        const rawDataUrl = canvas.toDataURL('image/jpeg');
-
-        // Compress
-        const compressedDataUrl = await compressImage(rawDataUrl, 400, 0.5); // Slightly more compression for camera
-
-        const newImages = [...formState.itemImages];
-        newImages[activeCameraSlot] = compressedDataUrl;
-        dispatch({ type: 'UPDATE_FORM', payload: { itemImages: newImages } });
-        stopCamera();
-        if (activeCameraSlot === 0) {
-          performImageAnalysis(compressedDataUrl);
-        }
-      }
     }
   };
 
@@ -455,7 +398,7 @@ const App: React.FC = () => {
           <div className="bg-white w-full max-w-md rounded-[2rem] p-6 animate-slide-up shadow-2xl h-[90%] flex flex-col relative border-x-4 border-t-4 border-[#e5e5e5]">
             <div className="flex justify-between items-center mb-6 shrink-0">
               <button
-                onClick={() => { dispatch({ type: 'TOGGLE_ADDING', payload: false }); stopCamera(); }}
+                onClick={() => { dispatch({ type: 'TOGGLE_ADDING', payload: false }); }}
                 className="btn-3d w-10 h-10 rounded-xl bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center hover:bg-gray-50 active:border-b-0"
               >
                 <i className="fas fa-times"></i>
@@ -470,14 +413,8 @@ const App: React.FC = () => {
                 submitLabel="SAVE ITEM"
                 isAnalyzing={isAnalyzing}
                 performNameAnalysis={performNameAnalysis}
-                startCamera={startCamera}
-                stopCamera={stopCamera}
-                capturePhoto={capturePhoto}
                 removeImage={removeImage}
                 handleImageUpload={handleImageUpload}
-                videoRef={videoRef}
-                canvasRef={canvasRef}
-                fileInputRef={fileInputRef}
               />
             </div>
           </div>
@@ -490,7 +427,7 @@ const App: React.FC = () => {
           <div className="bg-white w-full max-w-md rounded-[2rem] p-6 animate-slide-up shadow-2xl h-[90%] flex flex-col relative border-x-4 border-t-4 border-[#e5e5e5]">
             <div className="flex justify-between items-center mb-6 shrink-0">
               <button
-                onClick={() => { dispatch({ type: 'SET_SELECTED_ITEM', payload: null }); dispatch({ type: 'TOGGLE_EDIT_MODE', payload: false }); stopCamera(); }}
+                onClick={() => { dispatch({ type: 'SET_SELECTED_ITEM', payload: null }); dispatch({ type: 'TOGGLE_EDIT_MODE', payload: false }); }}
                 className="btn-3d w-10 h-10 rounded-xl bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center hover:bg-gray-50"
               >
                 <i className="fas fa-arrow-left"></i>
@@ -508,14 +445,8 @@ const App: React.FC = () => {
                   submitLabel="UPDATE"
                   isAnalyzing={isAnalyzing}
                   performNameAnalysis={performNameAnalysis}
-                  startCamera={startCamera}
-                  stopCamera={stopCamera}
-                  capturePhoto={capturePhoto}
                   removeImage={removeImage}
                   handleImageUpload={handleImageUpload}
-                  videoRef={videoRef}
-                  canvasRef={canvasRef}
-                  fileInputRef={fileInputRef}
                 />
               ) : (
                 <ItemDetail
