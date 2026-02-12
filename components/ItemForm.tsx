@@ -22,6 +22,19 @@ const ItemForm: React.FC<ItemFormProps> = ({
   const { formState, config } = state;
   const { itemName, locType, locDetail, itemNotes, itemImages } = formState;
 
+  // 🔍 디버깅: itemImages 상태 변화 추적
+  React.useEffect(() => {
+    console.log('🖼️ ItemForm - itemImages 상태 변경됨:', itemImages);
+    console.log('📊 이미지 개수:', itemImages.length);
+    itemImages.forEach((img, idx) => {
+      if (img) {
+        console.log(`✅ 슬롯 ${idx}: 이미지 있음 (크기: ${img.length} bytes)`);
+      } else {
+        console.log(`❌ 슬롯 ${idx}: 이미지 없음`);
+      }
+    });
+  }, [itemImages]);
+
   const updateForm = (updates: Partial<typeof formState>) => {
     dispatch({ type: 'UPDATE_FORM', payload: updates });
   };
@@ -30,53 +43,70 @@ const ItemForm: React.FC<ItemFormProps> = ({
     <form onSubmit={onSubmit} className="space-y-6 pt-2">
       <div className="flex flex-col items-center">
         <div className="w-full grid grid-cols-2 gap-4">
-          {[0, 1].map((idx) => (
-            <div key={idx} className="aspect-square rounded-2xl bg-gray-50 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group hover:bg-gray-100 hover:border-duo-blue active:border-solid transition-all">
+          {[0, 1].map((idx) => {
+            const hasImage = itemImages[idx];
+            console.log(`🎨 렌더링 - 슬롯 ${idx}:`, hasImage ? '이미지 있음' : '이미지 없음');
 
-              {itemImages[idx] ? (
-                <div className="w-full h-full relative group">
-                  <img src={itemImages[idx]} className="w-full h-full object-cover" alt="img" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                    <button type="button" onClick={() => removeImage(idx)} className="bg-duo-red text-white px-3 py-1.5 rounded-xl font-bold border-b-4 border-[#b91e1e] active:border-b-0 active:translate-y-1">Remove</button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-3">
-                  <div className="flex gap-2">
-                    {/* 📷 카메라 버튼 - 기본 카메라 앱으로 사진 촬영 */}
-                    <label
-                      className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-blue cursor-pointer"
-                      title="카메라로 촬영"
-                    >
-                      <i className="fas fa-camera text-xl"></i>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        className="hidden"
-                        onChange={(e) => handleImageUpload(e, idx)}
-                      />
-                    </label>
+            return (
+              <div key={`photo-slot-${idx}-${hasImage ? 'filled' : 'empty'}`} className="aspect-square rounded-2xl bg-gray-50 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group hover:bg-gray-100 hover:border-duo-blue active:border-solid transition-all">
 
-                    {/* 🖼️ 갤러리 버튼 - 갤러리에서 사진 선택 */}
-                    <label
-                      className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-green cursor-pointer"
-                      title="갤러리에서 선택"
-                    >
-                      <i className="fas fa-image text-xl"></i>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleImageUpload(e, idx)}
-                      />
-                    </label>
+                {hasImage ? (
+                  <div className="w-full h-full relative group">
+                    <img
+                      src={itemImages[idx]}
+                      className="w-full h-full object-cover"
+                      alt={`${idx === 0 ? 'Item' : 'Place'} photo`}
+                      onLoad={() => console.log(`✅ 이미지 로드 완료 - 슬롯 ${idx}`)}
+                      onError={(e) => console.error(`❌ 이미지 로드 실패 - 슬롯 ${idx}`, e)}
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                      <button type="button" onClick={() => removeImage(idx)} className="bg-duo-red text-white px-3 py-1.5 rounded-xl font-bold border-b-4 border-[#b91e1e] active:border-b-0 active:translate-y-1">Remove</button>
+                    </div>
                   </div>
-                  <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{idx === 0 ? 'ITEM PHOTO' : 'PLACE PHOTO'}</span>
-                </div>
-              )}
-            </div>
-          ))}
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="flex gap-2">
+                      {/* 📷 카메라 버튼 - 기본 카메라 앱으로 사진 촬영 */}
+                      <label
+                        className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-blue cursor-pointer"
+                        title="카메라로 촬영"
+                      >
+                        <i className="fas fa-camera text-xl"></i>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => {
+                            console.log(`📷 카메라 버튼 클릭 - 슬롯 ${idx}`);
+                            handleImageUpload(e, idx);
+                          }}
+                        />
+                      </label>
+
+                      {/* 🖼️ 갤러리 버튼 - 갤러리에서 사진 선택 */}
+                      <label
+                        className="w-12 h-12 bg-white rounded-xl border-2 border-gray-200 border-b-4 flex items-center justify-center hover:bg-gray-50 active:border-b-2 active:translate-y-1 text-gray-400 hover:text-duo-green cursor-pointer"
+                        title="갤러리에서 선택"
+                      >
+                        <i className="fas fa-image text-xl"></i>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            console.log(`🖼️ 갤러리 버튼 클릭 - 슬롯 ${idx}`);
+                            handleImageUpload(e, idx);
+                          }}
+                        />
+                      </label>
+                    </div>
+                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{idx === 0 ? 'ITEM PHOTO' : 'PLACE PHOTO'}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
