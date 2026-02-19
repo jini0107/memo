@@ -28,7 +28,7 @@ export const searchWithGemini = async (query: string, items: Item[]): Promise<st
       답변은 오직 관련 있는 물건들의 정확한 이름들을 콤마(,)로 구분해서 나열하십시오. 
       관련 있는 게 없다면 '없음'이라고 답하세요.
     `;
-    
+
     const response = await ai.models.generateContent({
       model: 'gemini-1.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -71,12 +71,12 @@ export const analyzeImage = async (base64Image: string): Promise<{ name: string,
     const ai = getAIClient();
     const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, "");
     const prompt = `
-      Analyze this image and identify the main item.
-      1. Suggest a concise Korean name for the item (name).
-      2. Suggest the most appropriate category (category) from this list: [서류/문서, 가전/IT, 의류/패션, 생활용품, 디지털 정보, 기타].
-      3. Suggest 3 relevant Korean search notes (notes) for search.
+      이 이미지를 분석하여 주요 물건을 식별해주세요.
+      1. 물건의 핵심적인 이름을 짧은 한국어로 제안해주세요 (name).
+      2. 다음 리스트 중 가장 적합한 카테고리를 선택해주세요 (category): [서류/문서, 가전/IT, 의류/패션, 생활용품, 디지털 정보, 기타].
+      3. 검색에 도움이 될만한 연관 한국어 메모 3개를 제안해주세요 (notes).
       
-      Return ONLY JSON: {"name": "...", "category": "...", "notes": ["...", "...", "..."]}
+      반드시 JSON 형식으로만 답변하세요: {"name": "...", "category": "...", "notes": ["...", "...", "..."]}
     `;
 
     const response = await ai.models.generateContent({
