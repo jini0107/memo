@@ -381,8 +381,8 @@ const App: React.FC = () => {
           </div>
 
           {/* 앱 이름 */}
-          <h1 className="text-3xl font-black text-white tracking-tight mb-1.5 animate-fade-in">
-            WhereIsIt
+          <h1 className="text-4xl font-black text-white tracking-tighter mb-1.5 animate-fade-in" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            어딨더라
           </h1>
 
           {/* 핵심 문구 - 앱을 한번에 알 수 있는 */}

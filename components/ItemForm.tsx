@@ -34,7 +34,7 @@ const ItemForm: React.FC<ItemFormProps> = ({
 }) => {
   const { state, dispatch } = useContext(AppContext);
   const { formState, config } = state;
-  const { itemName, locType, locDetail, itemNotes, itemImages } = formState;
+  const { itemName, itemCat, locType, locDetail, itemNotes, itemImages } = formState;
 
   /**
    * 각 슬롯별 카메라/갤러리 input ref
@@ -223,32 +223,56 @@ const ItemForm: React.FC<ItemFormProps> = ({
         </div>
       )}
 
-      {/* ═══════ 아이템 이름 ═══════ */}
-      <div>
-        <label className="block text-[11px] font-bold text-surface-400 mb-1.5 uppercase tracking-wider">
-          <i className="fas fa-pen mr-1 text-[9px] text-primary-300"></i>
-          물건 이름
-        </label>
-        <div className="relative">
-          <input
+      {/* ═══════ 아이템 이름 & 카테고리 ═══════ */}
+      <div className="space-y-3">
+        {/* 이름 입력 */}
+        <div>
+          <label className="block text-[11px] font-bold text-surface-400 mb-1.5 uppercase tracking-wider">
+            <i className="fas fa-pen mr-1 text-[9px] text-primary-300"></i>
+            물건 이름
+          </label>
+          <div className="relative">
+            <input
+              required
+              type="text"
+              className="input-field pr-10"
+              placeholder="예: 여권, 열쇠, 충전기..."
+              value={itemName}
+              onChange={(e) => updateForm({ itemName: e.target.value })}
+            />
+            {/* AI 제안 버튼 */}
+            {itemName.trim() && (
+              <button
+                type="button"
+                onClick={performNameAnalysis}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-primary-50 text-primary-400 flex items-center justify-center hover:bg-primary-100 transition-all text-xs touch-feedback"
+                title="AI 자동 분류"
+              >
+                <i className="fas fa-wand-magic-sparkles"></i>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 카테고리 선택 (누락 부분 추가됨) */}
+        <div>
+          <label className="block text-[11px] font-bold text-surface-400 mb-1.5 uppercase tracking-wider">
+            <i className="fas fa-tag mr-1 text-[9px] text-accent-400"></i>
+            카테고리
+          </label>
+          <select
+            className="input-field appearance-none"
+            value={itemCat}
+            onChange={(e) => updateForm({ itemCat: e.target.value })}
             required
-            type="text"
-            className="input-field pr-10"
-            placeholder="예: 여권, 열쇠, 충전기..."
-            value={itemName}
-            onChange={(e) => updateForm({ itemName: e.target.value })}
-          />
-          {/* AI 제안 버튼 */}
-          {itemName.trim() && (
-            <button
-              type="button"
-              onClick={performNameAnalysis}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-primary-50 text-primary-400 flex items-center justify-center hover:bg-primary-100 transition-all text-xs touch-feedback"
-              title="AI 자동 분류"
-            >
-              <i className="fas fa-wand-magic-sparkles"></i>
-            </button>
-          )}
+            style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '0.65em auto' }}
+          >
+            {config.categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
