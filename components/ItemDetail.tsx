@@ -6,82 +6,143 @@ import { DELETE_CONFIRM_MESSAGE } from '../constants';
 interface ItemDetailProps {
   item: Item;
   onEdit: () => void;
+  onDelete: () => void;
 }
 
-const ItemDetail: React.FC<ItemDetailProps> = ({ item, onEdit }) => {
+/**
+ * ItemDetail 컴포넌트
+ * - 아이템 상세 정보 표시
+ * - 프리미엄 카드 레이아웃 + 정보 계층 구조
+ */
+const ItemDetail: React.FC<ItemDetailProps> = ({ item, onEdit, onDelete }) => {
   const { state, dispatch } = useContext(AppContext);
 
-  const onDelete = () => {
-    if (confirm(DELETE_CONFIRM_MESSAGE)) {
-      dispatch({ type: 'SET_ITEMS', payload: state.items.filter(i => i.id !== item.id) });
-      dispatch({ type: 'SET_SELECTED_ITEM', payload: null });
-    }
+  /**
+   * 상대 시간 포맷
+   */
+  const formatDate = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }) + ' ' + date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
-    <div className="space-y-6 pb-4">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-5 pb-4 animate-fade-in">
+
+      {/* ═══════ 사진 갤러리 ═══════ */}
+      <div className="grid grid-cols-2 gap-3">
         {[0, 1].map((idx) => (
-          <div key={idx} className="flex flex-col gap-2">
-            <div className="aspect-square rounded-2xl overflow-hidden bg-gray-100 border-2 border-gray-200 flex items-center justify-center relative">
+          <div key={idx} className="relative">
+            <div className="aspect-square rounded-2xl overflow-hidden bg-surface-100 flex items-center justify-center">
               {item.imageUrls[idx] ? (
-                <img src={item.imageUrls[idx]} alt={idx === 0 ? 'Item' : 'Place'} className="w-full h-full object-cover" />
+                <img
+                  src={item.imageUrls[idx]}
+                  alt={idx === 0 ? '아이템 사진' : '보관 장소'}
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <div className="flex flex-col items-center text-gray-300">
-                  <i className="fas fa-image text-3xl mb-2"></i>
-                  <span className="text-xs font-black uppercase">No Photo</span>
+                <div className="flex flex-col items-center gap-2 text-surface-300">
+                  <div className="w-12 h-12 rounded-xl bg-surface-200/50 flex items-center justify-center">
+                    <i className={`fas ${idx === 0 ? 'fa-cube' : 'fa-location-dot'} text-xl`}></i>
+                  </div>
+                  <span className="text-[10px] font-bold">사진 없음</span>
                 </div>
               )}
-              <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] text-white font-black uppercase tracking-widest border border-white/20">
-                {idx === 0 ? 'ITEM' : 'PLACE'}
-              </div>
+            </div>
+            {/* 라벨 뱃지 */}
+            <div className="absolute top-2 left-2 px-2 py-1 rounded-lg text-[9px] font-bold text-white uppercase tracking-widest"
+              style={{ background: 'rgba(15, 23, 42, 0.55)', backdropFilter: 'blur(8px)' }}
+            >
+              {idx === 0 ? '📦 물건' : '📍 장소'}
             </div>
           </div>
         ))}
       </div>
 
-      <div className="space-y-4">
-        <div className="bg-white p-4 rounded-2xl border-2 border-gray-200">
-          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Identity</p>
-          <div className="flex justify-between items-start">
-            <h3 className="text-2xl font-extrabold text-[#4b4b4b]">{item.name}</h3>
-            <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-lg border-2 border-gray-200">
-              {new Date(item.updatedAt).toLocaleDateString()}
-            </span>
+      {/* ═══════ 아이템 이름 + 날짜 ═══════ */}
+      <div className="card p-5">
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1.5">아이템 이름</p>
+            <h3 className="text-xl font-extrabold text-surface-800 leading-tight">{item.name}</h3>
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-duo-blue/10 p-4 rounded-2xl border-2 border-duo-blue/20 border-b-4">
-            <p className="text-xs font-black text-duo-blue uppercase tracking-widest mb-1">Location</p>
-            <p className="text-lg font-black text-duo-blue leading-tight truncate">{item.locationPath}</p>
-          </div>
-          <div className="bg-duo-green/10 p-4 rounded-2xl border-2 border-duo-green/20 border-b-4">
-            <p className="text-xs font-black text-duo-green uppercase tracking-widest mb-1">Category</p>
-            <p className="text-lg font-black text-duo-green leading-tight truncate">{item.category}</p>
-          </div>
-        </div>
-
-        <div className="bg-gray-50 p-6 rounded-2xl border-2 border-gray-200 border-b-4 relative">
-          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Notes</p>
-          <div className="text-lg text-[#4b4b4b] font-bold whitespace-pre-wrap relative z-10 leading-relaxed">
-            "{item.notes.length > 0 ? item.notes.join('\n') : 'No details recorded.'}"
+          <div className="text-right shrink-0">
+            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1.5">업데이트</p>
+            <p className="text-xs font-semibold text-surface-500">
+              {formatDate(item.updatedAt)}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="flex gap-4 pt-2">
+      {/* ═══════ 위치 + 카테고리 ═══════ */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* 위치 카드 */}
+        <div className="card p-4 border-l-4 border-l-primary-400" style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%)' }}>
+          <p className="text-[10px] font-bold text-primary-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+            <i className="fas fa-map-marker-alt text-[8px]"></i>
+            보관 위치
+          </p>
+          <p className="text-sm font-bold text-primary-700 leading-snug break-words">{item.locationPath}</p>
+        </div>
+
+        {/* 카테고리 카드 */}
+        <div className="card p-4 border-l-4 border-l-accent-400" style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #f8fafc 100%)' }}>
+          <p className="text-[10px] font-bold text-accent-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+            <i className="fas fa-tag text-[8px]"></i>
+            카테고리
+          </p>
+          <p className="text-sm font-bold text-accent-700 leading-snug">{item.category}</p>
+        </div>
+      </div>
+
+      {/* ═══════ 메모 영역 ═══════ */}
+      <div className="card p-5 relative overflow-hidden">
+        {/* 장식 요소 */}
+        <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-30"
+          style={{ background: 'radial-gradient(circle, rgba(251, 191, 36, 0.2), transparent)', transform: 'translate(30%, -30%)' }}
+        />
+
+        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+          <i className="fas fa-sticky-note text-warn-400 text-[9px]"></i>
+          메모 · 특이사항
+        </p>
+
+        {item.notes.length > 0 ? (
+          <div className="space-y-2">
+            {item.notes.map((note, idx) => (
+              <div key={idx} className="flex items-start gap-2.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-warn-400 mt-1.5 shrink-0"></div>
+                <p className="text-sm text-surface-700 font-medium leading-relaxed">{note}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-surface-300 font-medium italic">기록된 메모가 없습니다</p>
+        )}
+      </div>
+
+      {/* ═══════ 액션 버튼 ═══════ */}
+      <div className="flex gap-3 pt-2">
         <button
           onClick={onDelete}
-          className="flex-1 py-4 bg-white text-duo-red rounded-2xl font-black border-2 border-gray-200 border-b-4 hover:border-duo-red hover:bg-duo-red hover:text-white active:border-b-2 active:translate-y-1 transition-all uppercase tracking-widest"
+          className="flex-1 py-3.5 btn-outline rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-danger-500 border-danger-500/20 hover:bg-danger-500 hover:text-white hover:border-danger-500 transition-all touch-feedback"
         >
-          DELETE
+          <i className="fas fa-trash-alt"></i>
+          삭제
         </button>
         <button
           onClick={onEdit}
-          className="flex-[2] py-4 bg-duo-blue text-white rounded-2xl font-black border-b-4 border-[#1899d6] active:border-b-0 active:translate-y-1 transition-all uppercase tracking-widest hover:bg-[#2ec0ff]"
+          className="flex-[2] py-3.5 btn-primary rounded-xl font-bold text-sm flex items-center justify-center gap-2 touch-feedback"
         >
-          EDIT ITEM
+          <i className="fas fa-pen"></i>
+          수정하기
         </button>
       </div>
     </div>

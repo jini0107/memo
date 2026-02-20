@@ -7,6 +7,11 @@ interface ItemListProps {
   items: Item[];
 }
 
+/**
+ * ItemList 컴포넌트
+ * - 카드 뷰 / 테이블 뷰 지원
+ * - 프리미엄 카드 디자인 + 마이크로 인터랙션
+ */
 const ItemList: React.FC<ItemListProps> = ({ items }) => {
   const { state, dispatch } = useContext(AppContext);
 
@@ -23,106 +28,185 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
     }
   };
 
+  /**
+   * 카테고리별 색상 매핑
+   * - 각 카테고리에 고유한 그라데이션 색상 부여
+   */
+  const getCategoryColor = (category: string): { bg: string; text: string; dot: string } => {
+    const colorMap: Record<string, { bg: string; text: string; dot: string }> = {
+      '서류/문서': { bg: 'bg-blue-50', text: 'text-blue-600', dot: 'bg-blue-400' },
+      '가전/IT': { bg: 'bg-purple-50', text: 'text-purple-600', dot: 'bg-purple-400' },
+      '의류/패션': { bg: 'bg-pink-50', text: 'text-pink-600', dot: 'bg-pink-400' },
+      '생활용품': { bg: 'bg-emerald-50', text: 'text-emerald-600', dot: 'bg-emerald-400' },
+      '디지털 정보': { bg: 'bg-indigo-50', text: 'text-indigo-600', dot: 'bg-indigo-400' },
+      '기타': { bg: 'bg-surface-100', text: 'text-surface-600', dot: 'bg-surface-400' },
+    };
+    return colorMap[category] || colorMap['기타'];
+  };
+
+  /**
+   * 장소 타입별 아이콘 매핑
+   */
+  const getLocationIcon = (locationPath: string): string => {
+    const locType = locationPath.split(' > ')[0] || '';
+    const iconMap: Record<string, string> = {
+      '집': 'fa-house',
+      '사무실': 'fa-building',
+      '디지털저장소': 'fa-cloud',
+      '기타': 'fa-location-dot',
+    };
+    return iconMap[locType] || 'fa-location-dot';
+  };
+
+  /**
+   * 상대 시간 포맷터
+   */
+  const getRelativeTime = (timestamp: number): string => {
+    const diff = Date.now() - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return '방금 전';
+    if (minutes < 60) return `${minutes}분 전`;
+    if (hours < 24) return `${hours}시간 전`;
+    if (days < 7) return `${days}일 전`;
+    return new Date(timestamp).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  };
+
+
+  // ═══════════ 빈 상태 (아이템 없음) ═══════════
   if (items.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-gray-200 border-dashed">
-          <i className="fas fa-box-open text-4xl text-gray-300"></i>
+      <div className="text-center py-20 animate-fade-in-scale">
+        <div className="w-20 h-20 rounded-full bg-surface-100 flex items-center justify-center mx-auto mb-5">
+          <i className="fas fa-search text-3xl text-surface-300"></i>
         </div>
-        <p className="text-lg font-black text-gray-400">No Items Yet</p>
-        <p className="text-sm font-bold text-gray-300 mt-2">Tap the + button to add one!</p>
+        <p className="text-base font-bold text-surface-500 mb-1">검색 결과가 없습니다</p>
+        <p className="text-sm text-surface-400">다른 키워드로 검색해보세요</p>
       </div>
     );
   }
 
+  // ═══════════ 테이블 뷰 ═══════════
   if (state.viewMode === 'table') {
     return (
-      <div className="pb-28 overflow-x-auto -mx-2 px-2">
-        <table className="w-full text-left border-collapse bg-white rounded-2xl overflow-hidden border-2 border-gray-200">
-          <thead>
-            <tr className="bg-gray-50 border-b-2 border-gray-200">
-              <th className="px-4 py-3 text-xs font-black text-gray-400 uppercase tracking-widest">Name</th>
-              <th className="px-4 py-3 text-xs font-black text-gray-400 uppercase tracking-widest">Loc</th>
-              <th className="px-4 py-3 text-xs font-black text-gray-400 uppercase tracking-widest">Cat</th>
-              <th className="px-3 py-3 w-10"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y-2 divide-gray-100">
-            {items.map(item => (
-              <tr
-                key={item.id}
-                onClick={() => onSelectItem(item)}
-                className="hover:bg-duo-blue/5 transition-colors cursor-pointer group active:bg-gray-50"
-              >
-                <td className="px-4 py-4 font-bold text-[#4b4b4b]">{item.name}</td>
-                <td className="px-4 py-4 text-sm font-bold text-gray-500">{item.locationPath.split('>').pop()?.trim()}</td>
-                <td className="px-4 py-4">
-                  <span className="text-xs font-black text-duo-green uppercase">{item.category}</span>
-                </td>
-                <td className="px-3 py-4">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteItem(item.id);
-                    }}
-                    className="w-8 h-8 rounded-xl text-gray-300 hover:bg-duo-red hover:text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-                  >
-                    <i className="fas fa-trash-alt text-sm"></i>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="pb-28 space-y-2 animate-fade-in">
+        {items.map((item, idx) => (
+          <div
+            key={item.id}
+            onClick={() => onSelectItem(item)}
+            className="list-item-interactive card flex items-center gap-3 p-3 cursor-pointer"
+            style={{ animationDelay: `${idx * 0.03}s` }}
+          >
+            {/* 썸네일 또는 아이콘 */}
+            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-surface-100 flex items-center justify-center">
+              {item.imageUrls && item.imageUrls[0] ? (
+                <img src={item.imageUrls[0]} alt={item.name} className="w-full h-full object-cover" />
+              ) : (
+                <i className={`fas ${getLocationIcon(item.locationPath)} text-surface-300 text-sm`}></i>
+              )}
+            </div>
+
+            {/* 정보 */}
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-surface-800 text-sm truncate">{item.name}</p>
+              <p className="text-[11px] text-surface-400 font-medium truncate">
+                <i className={`fas ${getLocationIcon(item.locationPath)} mr-1 text-[9px]`}></i>
+                {item.locationPath.split('>').pop()?.trim()}
+              </p>
+            </div>
+
+            {/* 카테고리 뱃지 */}
+            <div className={`badge ${getCategoryColor(item.category).bg} ${getCategoryColor(item.category).text} shrink-0`}>
+              {item.category.split('/')[0]}
+            </div>
+
+            {/* 삭제 버튼 */}
+            <button
+              onClick={(e) => { e.stopPropagation(); onDeleteItem(item.id); }}
+              className="w-8 h-8 rounded-lg text-surface-300 hover:bg-danger-500 hover:text-white flex items-center justify-center transition-all shrink-0 touch-feedback"
+            >
+              <i className="fas fa-trash-alt text-xs"></i>
+            </button>
+          </div>
+        ))}
       </div>
     );
   }
 
-  // Card View (Default)
+  // ═══════════ 카드 뷰 (기본) ═══════════
   return (
-    <div className="space-y-4 pb-28">
-      {items.map(item => (
-        <div
-          key={item.id}
-          onClick={() => onSelectItem(item)}
-          className="bg-white p-4 rounded-2xl border-2 border-[#e5e5e5] border-b-4 flex gap-4 items-center group active:border-b-2 active:translate-y-[2px] active:scale-[0.99] transition-all cursor-pointer relative hover:border-duo-blue/30"
-        >
-          {/* Thumbnails */}
-          <div className="flex -space-x-3 overflow-hidden p-1 shrink-0">
-            {item.imageUrls && item.imageUrls.length > 0 ? (
-              item.imageUrls.slice(0, 2).map((url, idx) => (
-                <div key={idx} className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 border-2 border-white ring-1 ring-gray-200 relative z-10">
-                  <img src={url} alt={item.name} className="w-full h-full object-cover" />
-                </div>
-              ))
-            ) : (
-              <div className="w-16 h-16 rounded-xl flex-shrink-0 bg-duo-blue/10 border-2 border-duo-blue/20 flex items-center justify-center text-duo-blue">
-                <i className="fas fa-cube text-xl"></i>
-              </div>
-            )}
-          </div>
+    <div className="space-y-3 pb-28 animate-fade-in">
+      {items.map((item, idx) => {
+        const catColor = getCategoryColor(item.category);
 
-          <div className="flex-1 min-w-0">
-            <h4 className="font-extrabold text-[#4b4b4b] text-lg mb-1 leading-tight">{item.name}</h4>
-            <div className="flex gap-2 items-center mb-2">
-              <span className="text-xs font-black text-white bg-duo-green px-2 py-0.5 rounded-lg uppercase">{item.category}</span>
-              <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-lg border border-gray-200">
-                {item.locationPath.split('>').pop()?.trim()}
-              </span>
+        return (
+          <div
+            key={item.id}
+            onClick={() => onSelectItem(item)}
+            className="card card-interactive p-4 cursor-pointer"
+            style={{ animationDelay: `${idx * 0.04}s` }}
+          >
+            <div className="flex gap-3.5 items-start">
+              {/* 썸네일 영역 */}
+              <div className="relative shrink-0">
+                {item.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0] ? (
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-100 ring-2 ring-surface-100">
+                    <img src={item.imageUrls[0]} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center ring-2 ring-primary-50">
+                    <i className="fas fa-cube text-primary-300 text-xl"></i>
+                  </div>
+                )}
+
+                {/* 카테고리 도트 */}
+                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-md ${catColor.dot} flex items-center justify-center ring-2 ring-white`}>
+                  <i className="fas fa-tag text-white text-[7px]"></i>
+                </div>
+              </div>
+
+              {/* 아이템 정보 */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="font-bold text-surface-800 text-base leading-tight truncate">{item.name}</h4>
+                  <span className="text-[10px] font-medium text-surface-300 shrink-0 mt-0.5">
+                    {getRelativeTime(item.updatedAt)}
+                  </span>
+                </div>
+
+                {/* 위치 정보 */}
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <div className="flex items-center gap-1 text-[11px] text-surface-400 font-medium">
+                    <i className={`fas ${getLocationIcon(item.locationPath)} text-primary-300 text-[10px]`}></i>
+                    <span className="truncate max-w-[140px]">{item.locationPath}</span>
+                  </div>
+                </div>
+
+                {/* 태그 행 */}
+                <div className="flex items-center gap-2 mt-2">
+                  <span className={`badge ${catColor.bg} ${catColor.text}`}>
+                    {item.category}
+                  </span>
+                  {item.notes.length > 0 && (
+                    <span className="badge badge-surface">
+                      <i className="fas fa-sticky-note mr-1 text-[8px]"></i>
+                      메모 {item.notes.length}
+                    </span>
+                  )}
+                  {item.imageUrls && item.imageUrls.filter(u => u).length > 0 && (
+                    <span className="badge badge-surface">
+                      <i className="fas fa-image mr-1 text-[8px]"></i>
+                      {item.imageUrls.filter(u => u).length}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteItem(item.id);
-            }}
-            className="w-10 h-10 rounded-xl bg-gray-50 text-gray-300 hover:bg-duo-red hover:text-white border-2 border-transparent hover:border-duo-red/50 transition-all flex items-center justify-center shrink-0"
-          >
-            <i className="fas fa-trash-alt text-sm"></i>
-          </button>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
