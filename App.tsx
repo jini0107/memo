@@ -540,7 +540,7 @@ const App: React.FC = () => {
             </div>
 
             {/* 아이템 목록 */}
-            <ItemList items={filteredItems} />
+            <ItemList items={filteredItems} onDelete={deleteItem} />
           </>
         )}
       </div>

@@ -5,6 +5,7 @@ import { DELETE_CONFIRM_MESSAGE } from '../constants';
 
 interface ItemListProps {
   items: Item[];
+  onDelete: (id: string) => void;
 }
 
 /**
@@ -12,20 +13,11 @@ interface ItemListProps {
  * - 카드 뷰 / 테이블 뷰 지원
  * - 프리미엄 카드 디자인 + 마이크로 인터랙션
  */
-const ItemList: React.FC<ItemListProps> = ({ items }) => {
+const ItemList: React.FC<ItemListProps> = ({ items, onDelete }) => {
   const { state, dispatch } = useContext(AppContext);
 
   const onSelectItem = (item: Item) => {
     dispatch({ type: 'SET_SELECTED_ITEM', payload: item });
-  };
-
-  const onDeleteItem = (id: string) => {
-    if (confirm(DELETE_CONFIRM_MESSAGE)) {
-      dispatch({ type: 'SET_ITEMS', payload: state.items.filter(i => i.id !== id) });
-      if (state.selectedItem?.id === id) {
-        dispatch({ type: 'SET_SELECTED_ITEM', payload: null });
-      }
-    }
   };
 
   /**
@@ -124,7 +116,7 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
 
             {/* 삭제 버튼 */}
             <button
-              onClick={(e) => { e.stopPropagation(); onDeleteItem(item.id); }}
+              onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
               className="w-8 h-8 rounded-lg text-surface-300 hover:bg-danger-500 hover:text-white flex items-center justify-center transition-all shrink-0 touch-feedback"
             >
               <i className="fas fa-trash-alt text-xs"></i>
@@ -145,9 +137,18 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
           <div
             key={item.id}
             onClick={() => onSelectItem(item)}
-            className="card card-interactive p-4 cursor-pointer"
+            className="card card-interactive p-4 cursor-pointer relative group"
             style={{ animationDelay: `${idx * 0.04}s` }}
           >
+            {/* 삭제 버튼 (카드 우측 상단, 그룹 호버 시 더 잘 보이게) */}
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm border border-surface-200 text-surface-400 hover:bg-danger-500 hover:text-white hover:border-danger-500 flex items-center justify-center transition-all opacity-100 z-10 shadow-sm touch-feedback"
+              title="삭제"
+            >
+              <i className="fas fa-trash-alt text-xs"></i>
+            </button>
+
             <div className="flex gap-3.5 items-start">
               {/* 썸네일 영역 */}
               <div className="relative shrink-0">
