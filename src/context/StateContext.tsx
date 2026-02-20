@@ -26,6 +26,7 @@ interface AppState {
     itemCat: string;
     itemNotes: string;
     itemImages: string[];
+    isSecret: boolean; // 시크릿 모드 여부
   };
 
   isAnalyzing: boolean;
@@ -36,6 +37,13 @@ interface AppState {
   isCameraActive: boolean;
   activeCameraSlot: number | null;
 
+  // Security State
+  security: {
+    failCount: number; // 실패 횟수
+    lockedUntil: number | null; // 잠금 해제 시간 (timestamp)
+    isAuthenticated: boolean; // 현재 세션 인증 여부 (간단하게)
+  };
+
   // Config State
   config: {
     locTypes: string[];
@@ -43,6 +51,8 @@ interface AppState {
     officeLocs: string[];
     digitalLocs: string[];
     categories: string[];
+    secretPin?: string; // 6자리 PIN
+    secretHint?: string; // 비밀번호 힌트
   };
   isSettingsOpen: boolean;
 }
@@ -62,12 +72,18 @@ const initialState: AppState = {
     itemCat: Category.OTHER,
     itemNotes: '',
     itemImages: [],
+    isSecret: false,
   },
   isAnalyzing: false,
   aiSearchResults: null,
   isSearchingAI: false,
   isCameraActive: false,
   activeCameraSlot: null,
+  security: {
+    failCount: 0,
+    lockedUntil: null,
+    isAuthenticated: false,
+  },
   config: {
     locTypes: LOCATION_TYPES,
     homeLocs: HOME_LOCATIONS,
@@ -95,7 +111,12 @@ type Action =
   | { type: 'SET_CAMERA_ACTIVE'; payload: { isActive: boolean; slot: number | null } }
   | { type: 'UPDATE_CONFIG'; payload: Partial<AppState['config']> }
   | { type: 'TOGGLE_SETTINGS'; payload: boolean }
-  | { type: 'INITIALIZE_STATE'; payload: Partial<AppState> };
+  | { type: 'INITIALIZE_STATE'; payload: Partial<AppState> }
+  | { type: 'INCREMENT_PIN_FAIL' } // PIN 실패 1회 증가
+  | { type: 'RESET_PIN_FAIL' } // PIN 성공 시 초기화 (failCount = 0)
+  | { type: 'RESET_PIN_LOCK' } // 잠금 시간만 초기화 (failCount 유지)
+  | { type: 'SET_PIN_LOCKED'; payload: number } // 잠금 설정
+  | { type: 'SET_AUTHENTICATED'; payload: boolean };
 
 // --- REDUCER ---
 const appReducer = (state: AppState, action: Action): AppState => {
@@ -139,6 +160,50 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, config: { ...state.config, ...action.payload } };
     case 'TOGGLE_SETTINGS':
       return { ...state, isSettingsOpen: action.payload };
+    case 'INCREMENT_PIN_FAIL':
+      const newFailCount = state.security.failCount + 1;
+      return {
+        ...state,
+        security: {
+          ...state.security,
+          failCount: newFailCount,
+        }
+      };
+    case 'RESET_PIN_FAIL':
+      return {
+        ...state,
+        security: {
+          ...state.security,
+          failCount: 0,
+          lockedUntil: null,
+        }
+      };
+    case 'RESET_PIN_LOCK':
+      return {
+        ...state,
+        security: {
+          ...state.security,
+          lockedUntil: null,
+        }
+      };
+    case 'SET_PIN_LOCKED':
+      return {
+        ...state,
+        security: {
+          ...state.security,
+          lockedUntil: action.payload,
+          // failCount는 유지 (아이폰 방식)
+        }
+      };
+    case 'SET_AUTHENTICATED':
+      return {
+        ...state,
+        security: {
+          ...state.security,
+          isAuthenticated: action.payload,
+          failCount: 0,
+        }
+      };
     default:
       return state;
   }
@@ -166,6 +231,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           officeLocs: JSON.parse(localStorage.getItem('config_office_locs') || 'null'),
           digitalLocs: JSON.parse(localStorage.getItem('config_digital_locs') || 'null'),
           categories: JSON.parse(localStorage.getItem('config_categories') || 'null'),
+          secretPin: localStorage.getItem('config_secret_pin') || undefined,
+          secretHint: localStorage.getItem('config_secret_hint') || undefined,
         };
 
         const payload: Partial<AppState> = {};
@@ -179,6 +246,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (savedConfig.officeLocs) config.officeLocs = savedConfig.officeLocs;
         if (savedConfig.digitalLocs) config.digitalLocs = savedConfig.digitalLocs;
         if (savedConfig.categories) config.categories = savedConfig.categories;
+        if (savedConfig.secretPin) config.secretPin = savedConfig.secretPin;
 
         if (Object.keys(config).length > 0) {
           payload.config = { ...initialState.config, ...config };
@@ -234,6 +302,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('config_office_locs', JSON.stringify(state.config.officeLocs));
     localStorage.setItem('config_digital_locs', JSON.stringify(state.config.digitalLocs));
     localStorage.setItem('config_categories', JSON.stringify(state.config.categories));
+    if (state.config.secretPin) {
+      localStorage.setItem('config_secret_pin', state.config.secretPin);
+    }
+    if (state.config.secretHint) {
+      localStorage.setItem('config_secret_hint', state.config.secretHint);
+    }
   }, [state.config]);
 
   return (

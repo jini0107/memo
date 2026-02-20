@@ -254,6 +254,28 @@ const ItemForm: React.FC<ItemFormProps> = ({
           </div>
         </div>
 
+        {/* 🔒 시크릿 모드 토글 */}
+        <div className="flex items-center justify-between p-3.5 bg-surface-50 rounded-xl border border-surface-200">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${formState.isSecret ? 'bg-indigo-500 text-white' : 'bg-surface-200 text-surface-400'}`}>
+              <i className="fas fa-lock text-sm"></i>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-surface-800">시크릿 보관</span>
+              <span className="text-[10px] text-surface-400">목록에서 내용이 숨겨지고 비밀번호가 필요해요</span>
+            </div>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer touch-feedback">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={formState.isSecret || false}
+              onChange={(e) => updateForm({ isSecret: e.target.checked })}
+            />
+            <div className="w-11 h-6 bg-surface-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+          </label>
+        </div>
+
         {/* 카테고리 선택 (누락 부분 추가됨) */}
         <div>
           <label className="block text-[11px] font-bold text-surface-400 mb-1.5 uppercase tracking-wider">

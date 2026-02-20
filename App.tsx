@@ -7,6 +7,7 @@ import ItemList from './components/ItemList';
 import ItemForm from './components/ItemForm';
 import ItemDetail from './components/ItemDetail';
 import Settings from './components/Settings';
+import PinPadModal from './components/PinPadModal';
 import { AppContext } from './src/context/StateContext';
 import { exportItemsToExcel } from './services/excelService';
 import { dataService } from './services/dataService';
@@ -20,8 +21,14 @@ const App: React.FC = () => {
   const {
     items, searchTerm, sortOption, isAdding, selectedItem, isEditMode,
     formState, isAnalyzing, aiSearchResults, isSearchingAI,
-    config, isSettingsOpen
+    config, isSettingsOpen, security
   } = state;
+
+  const [pinModal, setPinModal] = React.useState<{
+    isOpen: boolean;
+    mode: 'setup' | 'verify' | 'change';
+    callback?: (pin: string, hint?: string) => void;
+  }>({ isOpen: false, mode: 'verify' });
 
   useEffect(() => {
     // Initialization or cleanup if needed
@@ -47,9 +54,28 @@ const App: React.FC = () => {
       category: formState.itemCat,
       notes: formState.itemNotes.split('\n').map(t => t.trim()).filter(t => t),
       imageUrls: formState.itemImages,
+      isSecret: formState.isSecret,
       updatedAt: Date.now()
     };
 
+    // 시크릿 모드인데 PIN이 없으면 설정 유도
+    if (formState.isSecret && !config.secretPin) {
+      setPinModal({
+        isOpen: true,
+        mode: 'setup',
+        callback: (newPin, newHint) => {
+          dispatch({ type: 'UPDATE_CONFIG', payload: { secretPin: newPin, secretHint: newHint } });
+          saveItem(newItem); // PIN 설정 후 저장
+          setPinModal({ isOpen: false, mode: 'verify' });
+        }
+      });
+      return;
+    }
+
+    saveItem(newItem);
+  };
+
+  const saveItem = async (newItem: Item) => {
     const updatedItems = [newItem, ...items];
     dispatch({ type: 'SET_ITEMS', payload: updatedItems });
     dispatch({ type: 'TOGGLE_ADDING', payload: false });
@@ -111,6 +137,7 @@ const App: React.FC = () => {
         itemCat: selectedItem.category,
         itemNotes: selectedItem.notes.join('\n'),
         itemImages: selectedItem.imageUrls,
+        isSecret: selectedItem.isSecret || false,
       }
     });
     dispatch({ type: 'TOGGLE_EDIT_MODE', payload: true });
@@ -540,7 +567,24 @@ const App: React.FC = () => {
             </div>
 
             {/* 아이템 목록 */}
-            <ItemList items={filteredItems} onDelete={deleteItem} />
+            <ItemList
+              items={filteredItems}
+              onDelete={deleteItem}
+              onItemClick={(item) => {
+                if (item.isSecret && !security.isAuthenticated) {
+                  setPinModal({
+                    isOpen: true,
+                    mode: 'verify',
+                    callback: () => {
+                      dispatch({ type: 'SET_SELECTED_ITEM', payload: item });
+                      setPinModal({ isOpen: false, mode: 'verify' });
+                    }
+                  });
+                } else {
+                  dispatch({ type: 'SET_SELECTED_ITEM', payload: item });
+                }
+              }}
+            />
           </>
         )}
       </div>
@@ -670,6 +714,18 @@ const App: React.FC = () => {
         handleExportExcel={handleExportExcel}
         handleImportData={handleImportData}
       />
+
+      {/* 🔐 PIN 모달 */}
+      {pinModal.isOpen && (
+        <PinPadModal
+          mode={pinModal.mode}
+          onSuccess={(pin, hint) => {
+            if (pinModal.callback) pinModal.callback(pin, hint);
+            else setPinModal({ ...pinModal, isOpen: false });
+          }}
+          onClose={() => setPinModal({ ...pinModal, isOpen: false })}
+        />
+      )}
     </div>
   );
 };

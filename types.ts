@@ -13,6 +13,7 @@ export interface Item {
   imageUrls: string[]; // 최대 2장까지 저장
   notes: string[];
   updatedAt: number;
+  isSecret?: boolean; // 보안 모드 (PIN 필요)
 }
 
 export enum Category {

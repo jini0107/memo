@@ -6,6 +6,7 @@ import { DELETE_CONFIRM_MESSAGE } from '../constants';
 interface ItemListProps {
   items: Item[];
   onDelete: (id: string) => void;
+  onItemClick?: (item: Item) => void;
 }
 
 /**
@@ -13,11 +14,15 @@ interface ItemListProps {
  * - 카드 뷰 / 테이블 뷰 지원
  * - 프리미엄 카드 디자인 + 마이크로 인터랙션
  */
-const ItemList: React.FC<ItemListProps> = ({ items, onDelete }) => {
+const ItemList: React.FC<ItemListProps> = ({ items, onDelete, onItemClick }) => {
   const { state, dispatch } = useContext(AppContext);
 
-  const onSelectItem = (item: Item) => {
-    dispatch({ type: 'SET_SELECTED_ITEM', payload: item });
+  const handleItemClick = (item: Item) => {
+    if (onItemClick) {
+      onItemClick(item);
+    } else {
+      dispatch({ type: 'SET_SELECTED_ITEM', payload: item });
+    }
   };
 
   /**
@@ -87,8 +92,8 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete }) => {
         {items.map((item, idx) => (
           <div
             key={item.id}
-            onClick={() => onSelectItem(item)}
-            className="list-item-interactive card flex items-center gap-3 p-3 cursor-pointer"
+            onClick={() => handleItemClick(item)}
+            className={`list-item-interactive card flex items-center gap-3 p-3 cursor-pointer ${item.isSecret ? 'bg-indigo-50/50' : ''}`}
             style={{ animationDelay: `${idx * 0.03}s` }}
           >
             {/* 썸네일 또는 아이콘 */}
@@ -104,8 +109,14 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete }) => {
             <div className="flex-1 min-w-0">
               <p className="font-bold text-surface-800 text-sm truncate">{item.name}</p>
               <p className="text-[11px] text-surface-400 font-medium truncate">
-                <i className={`fas ${getLocationIcon(item.locationPath)} mr-1 text-[9px]`}></i>
-                {item.locationPath.split('>').pop()?.trim()}
+                {item.isSecret ? (
+                  <span className="text-surface-300 flex items-center gap-1"><i className="fas fa-lock text-[9px]"></i> 위치 정보 숨김</span>
+                ) : (
+                  <>
+                    <i className={`fas ${getLocationIcon(item.locationPath)} mr-1 text-[9px]`}></i>
+                    {item.locationPath.split('>').pop()?.trim()}
+                  </>
+                )}
               </p>
             </div>
 
@@ -136,8 +147,8 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete }) => {
         return (
           <div
             key={item.id}
-            onClick={() => onSelectItem(item)}
-            className="card card-interactive p-4 cursor-pointer relative group"
+            onClick={() => handleItemClick(item)}
+            className={`card card-interactive p-4 cursor-pointer relative group ${item.isSecret ? 'bg-gradient-to-br from-white to-indigo-50/30' : ''}`}
             style={{ animationDelay: `${idx * 0.04}s` }}
           >
             {/* 삭제 버튼 (카드 우측 상단, 그룹 호버 시 더 잘 보이게) */}
@@ -153,12 +164,17 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete }) => {
               {/* 썸네일 영역 */}
               <div className="relative shrink-0">
                 {item.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0] ? (
-                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-100 ring-2 ring-surface-100">
-                    <img src={item.imageUrls[0]} alt={item.name} className="w-full h-full object-cover" />
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-100 ring-2 ring-surface-100 relative">
+                    <img src={item.imageUrls[0]} alt={item.name} className={`w-full h-full object-cover ${item.isSecret ? 'blur-sm scale-110 opacity-60' : ''}`} />
+                    {item.isSecret && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                        <i className="fas fa-lock text-surface-600 text-xl drop-shadow-md"></i>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center ring-2 ring-primary-50">
-                    <i className="fas fa-cube text-primary-300 text-xl"></i>
+                    {item.isSecret ? <i className="fas fa-lock text-primary-300 text-xl"></i> : <i className="fas fa-cube text-primary-300 text-xl"></i>}
                   </div>
                 )}
 
@@ -175,30 +191,45 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete }) => {
                 </div>
 
                 {/* 위치 정보 */}
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <div className="flex items-center gap-1 text-[11px] text-surface-400 font-medium">
-                    <i className={`fas ${getLocationIcon(item.locationPath)} text-primary-300 text-[10px]`}></i>
-                    <span className="truncate max-w-[140px]">{item.locationPath}</span>
-                  </div>
+                <div className="flex items-center gap-1.5 mt-1.5 min-h-[18px]">
+                  {item.isSecret ? (
+                    <div className="flex items-center gap-1.5 text-[11px] text-surface-300 font-medium px-2 py-0.5 rounded-md bg-surface-100/50 w-fit">
+                      <i className="fas fa-user-secret text-[10px]"></i>
+                      <span className="truncate">내용이 숨겨졌습니다</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-[11px] text-surface-400 font-medium">
+                      <i className={`fas ${getLocationIcon(item.locationPath)} text-primary-300 text-[10px]`}></i>
+                      <span className="truncate max-w-[140px]">{item.locationPath}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* 태그 & 시간 행 */}
                 <div className="flex items-end justify-between mt-2 gap-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`badge ${catColor.bg} ${catColor.text}`}>
-                      {item.category}
-                    </span>
-                    {item.notes.length > 0 && (
-                      <span className="badge badge-surface">
-                        <i className="fas fa-sticky-note mr-1 text-[8px]"></i>
-                        {item.notes.length}
+                    {item.isSecret ? (
+                      <span className="badge bg-surface-100 text-surface-400">
+                        <i className="fas fa-lock mr-1 text-[8px]"></i> 시크릿
                       </span>
-                    )}
-                    {item.imageUrls && item.imageUrls.filter(u => u).length > 0 && (
-                      <span className="badge badge-surface">
-                        <i className="fas fa-image mr-1 text-[8px]"></i>
-                        {item.imageUrls.filter(u => u).length}
-                      </span>
+                    ) : (
+                      <>
+                        <span className={`badge ${catColor.bg} ${catColor.text}`}>
+                          {item.category}
+                        </span>
+                        {item.notes.length > 0 && (
+                          <span className="badge badge-surface">
+                            <i className="fas fa-sticky-note mr-1 text-[8px]"></i>
+                            {item.notes.length}
+                          </span>
+                        )}
+                        {item.imageUrls && item.imageUrls.filter(u => u).length > 0 && (
+                          <span className="badge badge-surface">
+                            <i className="fas fa-image mr-1 text-[8px]"></i>
+                            {item.imageUrls.filter(u => u).length}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                   {/* 시간 표시 - 하단 우측으로 이동 */}
