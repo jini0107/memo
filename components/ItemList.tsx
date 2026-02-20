@@ -169,12 +169,9 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete }) => {
               </div>
 
               {/* 아이템 정보 */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 pr-9">
                 <div className="flex items-start justify-between gap-2">
                   <h4 className="font-bold text-surface-800 text-base leading-tight truncate">{item.name}</h4>
-                  <span className="text-[10px] font-medium text-surface-300 shrink-0 mt-0.5">
-                    {getRelativeTime(item.updatedAt)}
-                  </span>
                 </div>
 
                 {/* 위치 정보 */}
@@ -185,23 +182,29 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete }) => {
                   </div>
                 </div>
 
-                {/* 태그 행 */}
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`badge ${catColor.bg} ${catColor.text}`}>
-                    {item.category}
+                {/* 태그 & 시간 행 */}
+                <div className="flex items-end justify-between mt-2 gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={`badge ${catColor.bg} ${catColor.text}`}>
+                      {item.category}
+                    </span>
+                    {item.notes.length > 0 && (
+                      <span className="badge badge-surface">
+                        <i className="fas fa-sticky-note mr-1 text-[8px]"></i>
+                        {item.notes.length}
+                      </span>
+                    )}
+                    {item.imageUrls && item.imageUrls.filter(u => u).length > 0 && (
+                      <span className="badge badge-surface">
+                        <i className="fas fa-image mr-1 text-[8px]"></i>
+                        {item.imageUrls.filter(u => u).length}
+                      </span>
+                    )}
+                  </div>
+                  {/* 시간 표시 - 하단 우측으로 이동 */}
+                  <span className="text-[10px] font-medium text-surface-300 shrink-0 mb-0.5">
+                    {getRelativeTime(item.updatedAt)}
                   </span>
-                  {item.notes.length > 0 && (
-                    <span className="badge badge-surface">
-                      <i className="fas fa-sticky-note mr-1 text-[8px]"></i>
-                      메모 {item.notes.length}
-                    </span>
-                  )}
-                  {item.imageUrls && item.imageUrls.filter(u => u).length > 0 && (
-                    <span className="badge badge-surface">
-                      <i className="fas fa-image mr-1 text-[8px]"></i>
-                      {item.imageUrls.filter(u => u).length}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
