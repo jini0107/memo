@@ -14,6 +14,7 @@
 
 ## ⏳ 진행 중
 - [x] README.md에 통합 개발 및 세팅 가이드 병합 완료
+- [x] SETUP_GUIDE.md 수동 수정 내용 반영 및 업로드 완료
 - [x] 불필요해진 중복 가이드 파일 정리 검토
 - [x] GitHub 원격 저장소 최종 동기화 (최신 반영)
 - [x] senior_developer_tips.txt에 문서화 가이드 보완
