@@ -13,8 +13,9 @@
 - [x] 수정 시 시크릿 설정이 유실되던 버그 수정
 
 ## ⏳ 진행 중
-- [x] README.md 리팩토링 (프로젝트 목적 및 기능 중심)
-- [x] SETUP_GUIDE.md 생성 (초기 환경 구축 및 DB 세팅 가이드)
+- [x] README.md에 통합 개발 및 세팅 가이드 병합 완료
+- [x] 불필요해진 중복 가이드 파일 정리 검토
+- [x] GitHub 원격 저장소 최종 동기화 (최신 반영)
 - [x] senior_developer_tips.txt에 문서화 가이드 보완
 - [x] UPDATE_LOG.txt에 통합 개발 환경 구축 내역 기록
 - [x] GitHub 원격 저장소 최종 동기화 완료
