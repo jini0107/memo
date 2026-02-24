@@ -8,6 +8,8 @@ interface SettingsProps {
   handleExportData: () => void;
   handleExportExcel: () => void;
   handleImportData: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onPinChange: () => void;
+  onPinReset: () => void;
 }
 
 /**
@@ -21,6 +23,8 @@ const Settings: React.FC<SettingsProps> = ({
   handleExportData,
   handleExportExcel,
   handleImportData,
+  onPinChange,
+  onPinReset,
 }) => {
   const { state, dispatch } = useContext(AppContext);
   const { config } = state;
@@ -109,6 +113,43 @@ const Settings: React.FC<SettingsProps> = ({
                     백업 파일에서 복원하기
                     <input type="file" accept=".json" className="hidden" onChange={handleImportData} />
                   </label>
+                </div>
+
+                {/* 🔐 보안 설정 카드 */}
+                <div className="rounded-2xl overflow-hidden bg-slate-800 border border-slate-700 shadow-lg">
+                  <div className="p-5 relative">
+                    {/* 배경 장식 */}
+                    <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-accent-500/10" style={{ filter: 'blur(30px)', transform: 'translate(40%, -40%)' }}></div>
+
+                    <h3 className="font-bold text-sm text-white mb-1 flex items-center gap-2">
+                      <i className="fas fa-shield-halved text-accent-400"></i>
+                      보안 설정
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-medium mb-4">시크릿 모드 비밀번호를 관리합니다</p>
+
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
+                        onClick={onPinChange}
+                        className="py-3 bg-slate-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-slate-600 transition-all touch-feedback border border-slate-600/50"
+                      >
+                        <i className="fas fa-key text-accent-400"></i>
+                        비밀번호 변경
+                      </button>
+                      <button
+                        onClick={onPinReset}
+                        className="py-3 bg-danger-500/10 text-danger-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-danger-500/20 transition-all touch-feedback border border-danger-500/20"
+                      >
+                        <i className="fas fa-trash-can"></i>
+                        초기화
+                      </button>
+                    </div>
+
+                    {!config.secretPin && (
+                      <p className="mt-3 text-center text-[10px] text-slate-500 font-medium italic">
+                        * 현재 설정된 비밀번호가 없습니다.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

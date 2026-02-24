@@ -104,20 +104,20 @@ const PinPadModal: React.FC<PinPadModalProps> = ({ mode, onSuccess, onClose, tit
             setShowHintButton(true);
         }
 
-        // 아이폰 스타일 잠금 규칙
-        // 5 (6번째 시도 전): 1분
-        // 6 (7번째 시도 전): 5분
-        // 7 (8번째 시도 전): 15분
-        // 8+ (9번째 시도부터): 60분
+        // 점진적 누적 잠금 규칙
+        // 5회 실패 시: 10분 잠금
+        // 5회 초과 시: 10분 + (초과 횟수 * 5분)
         let lockDuration = 0;
-        if (newFailCount === 5) lockDuration = 60 * 1000;
-        else if (newFailCount === 6) lockDuration = 5 * 60 * 1000;
-        else if (newFailCount === 7) lockDuration = 15 * 60 * 1000;
-        else if (newFailCount >= 8) lockDuration = 60 * 60 * 1000;
+        if (newFailCount === 5) {
+            lockDuration = 10 * 60 * 1000; // 10분
+        } else if (newFailCount > 5) {
+            const extraMinutes = (newFailCount - 5) * 5;
+            lockDuration = (10 + extraMinutes) * 60 * 1000;
+        }
 
         if (lockDuration > 0) {
             dispatch({ type: 'SET_PIN_LOCKED', payload: Date.now() + lockDuration });
-            const minutes = lockDuration / 60000;
+            const minutes = Math.floor(lockDuration / 60000);
             setErrorMsg(`${newFailCount}회 오류! ${minutes}분간 잠깁니다.`);
         } else {
             setErrorMsg(`비밀번호가 일치하지 않습니다 (${newFailCount}회 오류)`);

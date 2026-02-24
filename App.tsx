@@ -303,6 +303,68 @@ const App: React.FC = () => {
     exportItemsToExcel(items);
   };
 
+  /**
+   * 비밀번호(PIN) 변경 핸들러
+   */
+  const handlePinChange = () => {
+    if (!config.secretPin) {
+      // PIN이 없으면 바로 설정 모드로
+      setPinModal({
+        isOpen: true,
+        mode: 'setup',
+        callback: (newPin, newHint) => {
+          dispatch({ type: 'UPDATE_CONFIG', payload: { secretPin: newPin, secretHint: newHint } });
+          setPinModal({ isOpen: false, mode: 'verify' });
+          alert('비밀번호가 성공적으로 설정되었습니다. ✨');
+        }
+      });
+      return;
+    }
+
+    // PIN이 있으면 기존 PIN 확인 후 변경 모드로
+    setPinModal({
+      isOpen: true,
+      mode: 'verify',
+      callback: () => {
+        // 기존 PIN 확인 성공 시
+        setTimeout(() => {
+          setPinModal({
+            isOpen: true,
+            mode: 'setup',
+            callback: (newPin, newHint) => {
+              dispatch({ type: 'UPDATE_CONFIG', payload: { secretPin: newPin, secretHint: newHint } });
+              setPinModal({ isOpen: false, mode: 'verify' });
+              alert('비밀번호가 안전하게 변경되었습니다. 🔑');
+            }
+          });
+        }, 300);
+      }
+    });
+  };
+
+  /**
+   * 비밀번호(PIN) 초기화 핸들러
+   */
+  const handlePinReset = () => {
+    if (!config.secretPin) {
+      alert('설정된 비밀번호가 없습니다. 🛡️');
+      return;
+    }
+
+    if (!confirm('비밀번호를 초기화하시겠습니까?\n모든 시크릿 아이템의 보호가 해제됩니다. ⚠️')) return;
+
+    setPinModal({
+      isOpen: true,
+      mode: 'verify',
+      callback: () => {
+        // 기존 PIN 확인 성공 시
+        dispatch({ type: 'UPDATE_CONFIG', payload: { secretPin: undefined, secretHint: undefined } });
+        setPinModal({ isOpen: false, mode: 'verify' });
+        alert('비밀번호가 초기화되었습니다. 🔓');
+      }
+    });
+  };
+
   const handleImportData = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -713,6 +775,8 @@ const App: React.FC = () => {
         handleExportData={handleExportData}
         handleExportExcel={handleExportExcel}
         handleImportData={handleImportData}
+        onPinChange={handlePinChange}
+        onPinReset={handlePinReset}
       />
 
       {/* 🔐 PIN 모달 */}
