@@ -14,9 +14,10 @@
 
 ## ⏳ 진행 중
 - [x] README.md 리팩토링 (프로젝트 목적 및 기능 중심)
-- [x] senior_developer_tips.txt에 README 작성 노하우 추가
-- [x] UPDATE_LOG.txt에 문서화 작업 기록
-- [x] GitHub 원격 저장소 최종 업로드
+- [x] SETUP_GUIDE.md 생성 (초기 환경 구축 및 DB 세팅 가이드)
+- [x] senior_developer_tips.txt에 문서화 가이드 보완
+- [x] UPDATE_LOG.txt에 통합 개발 환경 구축 내역 기록
+- [x] GitHub 원격 저장소 최종 동기화 완료
 - [x] 현재 변경 사항 커밋 및 GitHub 업로드
 
 ## 📅 향후 진행 예정 사항
