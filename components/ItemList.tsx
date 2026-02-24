@@ -97,8 +97,10 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete, onItemClick }) => 
             style={{ animationDelay: `${idx * 0.03}s` }}
           >
             {/* 썸네일 또는 아이콘 */}
-            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-surface-100 flex items-center justify-center">
-              {item.imageUrls && item.imageUrls[0] ? (
+            <div className={`w-10 h-10 rounded-lg overflow-hidden shrink-0 flex items-center justify-center ${item.isSecret ? 'bg-indigo-50' : 'bg-surface-100'}`}>
+              {item.isSecret ? (
+                <i className="fas fa-lock text-indigo-300 text-xs"></i>
+              ) : item.imageUrls && item.imageUrls[0] ? (
                 <img src={item.imageUrls[0]} alt={item.name} className="w-full h-full object-cover" />
               ) : (
                 <i className={`fas ${getLocationIcon(item.locationPath)} text-surface-300 text-sm`}></i>
@@ -110,7 +112,7 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete, onItemClick }) => 
               <p className="font-bold text-surface-800 text-sm truncate">{item.name}</p>
               <p className="text-[11px] text-surface-400 font-medium truncate">
                 {item.isSecret ? (
-                  <span className="text-surface-300 flex items-center gap-1"><i className="fas fa-lock text-[9px]"></i> 위치 정보 숨김</span>
+                  <span className="text-surface-200 flex items-center gap-1"><i className="fas fa-eye-slash text-[9px]"></i> 비공개</span>
                 ) : (
                   <>
                     <i className={`fas ${getLocationIcon(item.locationPath)} mr-1 text-[9px]`}></i>
@@ -121,9 +123,14 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete, onItemClick }) => 
             </div>
 
             {/* 카테고리 뱃지 */}
-            <div className={`badge ${getCategoryColor(item.category).bg} ${getCategoryColor(item.category).text} shrink-0`}>
-              {item.category.split('/')[0]}
-            </div>
+            {!item.isSecret && (
+              <div className={`badge ${getCategoryColor(item.category).bg} ${getCategoryColor(item.category).text} shrink-0`}>
+                {item.category.split('/')[0]}
+              </div>
+            )}
+            {item.isSecret && (
+              <div className="w-8 shrink-0"></div>
+            )}
 
             {/* 삭제 버튼 */}
             <button
@@ -163,25 +170,26 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete, onItemClick }) => 
             <div className="flex gap-3.5 items-start">
               {/* 썸네일 영역 */}
               <div className="relative shrink-0">
-                {item.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0] ? (
+                {item.isSecret ? (
+                  <div className="w-16 h-16 rounded-xl bg-indigo-50 flex items-center justify-center ring-2 ring-indigo-50/50">
+                    <i className="fas fa-lock text-indigo-300 text-xl"></i>
+                  </div>
+                ) : item.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0] ? (
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-100 ring-2 ring-surface-100 relative">
-                    <img src={item.imageUrls[0]} alt={item.name} className={`w-full h-full object-cover ${item.isSecret ? 'blur-sm scale-110 opacity-60' : ''}`} />
-                    {item.isSecret && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                        <i className="fas fa-lock text-surface-600 text-xl drop-shadow-md"></i>
-                      </div>
-                    )}
+                    <img src={item.imageUrls[0]} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center ring-2 ring-primary-50">
-                    {item.isSecret ? <i className="fas fa-lock text-primary-300 text-xl"></i> : <i className="fas fa-cube text-primary-300 text-xl"></i>}
+                    <i className="fas fa-cube text-primary-300 text-xl"></i>
                   </div>
                 )}
 
-                {/* 카테고리 도트 */}
-                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-md ${catColor.dot} flex items-center justify-center ring-2 ring-white`}>
-                  <i className="fas fa-tag text-white text-[7px]"></i>
-                </div>
+                {/* 카테고리 도트 (시크릿 아닐 때만 노출) */}
+                {!item.isSecret && (
+                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-md ${catColor.dot} flex items-center justify-center ring-2 ring-white`}>
+                    <i className="fas fa-tag text-white text-[7px]"></i>
+                  </div>
+                )}
               </div>
 
               {/* 아이템 정보 */}
@@ -194,8 +202,8 @@ const ItemList: React.FC<ItemListProps> = ({ items, onDelete, onItemClick }) => 
                 <div className="flex items-center gap-1.5 mt-1.5 min-h-[18px]">
                   {item.isSecret ? (
                     <div className="flex items-center gap-1.5 text-[11px] text-surface-300 font-medium px-2 py-0.5 rounded-md bg-surface-100/50 w-fit">
-                      <i className="fas fa-user-secret text-[10px]"></i>
-                      <span className="truncate">내용이 숨겨졌습니다</span>
+                      <i className="fas fa-eye-slash text-[9px]"></i>
+                      <span className="truncate">비공개 장소</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1 text-[11px] text-surface-400 font-medium">

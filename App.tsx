@@ -105,6 +105,7 @@ const App: React.FC = () => {
       category: formState.itemCat,
       notes: formState.itemNotes.split('\n').map(t => t.trim()).filter(t => t),
       imageUrls: formState.itemImages,
+      isSecret: formState.isSecret,
       updatedAt: Date.now()
     };
 
