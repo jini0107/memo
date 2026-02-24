@@ -108,7 +108,7 @@ const App: React.FC = () => {
 
     const newItems = items.map(i => i.id === selectedItem.id ? updatedItem : i);
     dispatch({ type: 'SET_ITEMS', payload: newItems });
-    dispatch({ type: 'SET_SELECTED_ITEM', payload: updatedItem });
+    dispatch({ type: 'SET_SELECTED_ITEM', payload: null });
     dispatch({ type: 'TOGGLE_EDIT_MODE', payload: false });
 
     try {
