@@ -27,6 +27,8 @@ const App: React.FC = () => {
   const [pinModal, setPinModal] = React.useState<{
     isOpen: boolean;
     mode: 'setup' | 'verify' | 'change';
+    title?: string;
+    subTitle?: string;
     callback?: (pin: string, hint?: string) => void;
   }>({ isOpen: false, mode: 'verify' });
 
@@ -308,13 +310,14 @@ const App: React.FC = () => {
    */
   const handlePinChange = () => {
     if (!config.secretPin) {
-      // PIN이 없으면 바로 설정 모드로
       setPinModal({
         isOpen: true,
         mode: 'setup',
+        title: '비밀번호 설정 🛡️',
+        subTitle: '시크릿 모드에 사용할 6자리 번호를 입력하세요',
         callback: (newPin, newHint) => {
           dispatch({ type: 'UPDATE_CONFIG', payload: { secretPin: newPin, secretHint: newHint } });
-          setPinModal({ isOpen: false, mode: 'verify' });
+          setPinModal(prev => ({ ...prev, isOpen: false }));
           alert('비밀번호가 성공적으로 설정되었습니다. ✨');
         }
       });
@@ -325,15 +328,18 @@ const App: React.FC = () => {
     setPinModal({
       isOpen: true,
       mode: 'verify',
+      title: '본인 확인 🔐',
+      subTitle: '변경을 위해 현재 비밀번호를 입력해주세요',
       callback: () => {
-        // 기존 PIN 확인 성공 시
         setTimeout(() => {
           setPinModal({
             isOpen: true,
             mode: 'setup',
+            title: '새 비밀번호 설정 🔑',
+            subTitle: '새롭게 사용할 6자리 번호를 입력하세요',
             callback: (newPin, newHint) => {
               dispatch({ type: 'UPDATE_CONFIG', payload: { secretPin: newPin, secretHint: newHint } });
-              setPinModal({ isOpen: false, mode: 'verify' });
+              setPinModal(prev => ({ ...prev, isOpen: false }));
               alert('비밀번호가 안전하게 변경되었습니다. 🔑');
             }
           });
@@ -356,10 +362,11 @@ const App: React.FC = () => {
     setPinModal({
       isOpen: true,
       mode: 'verify',
+      title: '초기화 확인 🔓',
+      subTitle: '초기화를 위해 현재 비밀번호를 입력해주세요',
       callback: () => {
-        // 기존 PIN 확인 성공 시
         dispatch({ type: 'UPDATE_CONFIG', payload: { secretPin: undefined, secretHint: undefined } });
-        setPinModal({ isOpen: false, mode: 'verify' });
+        setPinModal(prev => ({ ...prev, isOpen: false }));
         alert('비밀번호가 초기화되었습니다. 🔓');
       }
     });
@@ -782,12 +789,15 @@ const App: React.FC = () => {
       {/* 🔐 PIN 모달 */}
       {pinModal.isOpen && (
         <PinPadModal
+          key={pinModal.mode}
           mode={pinModal.mode}
+          title={pinModal.title}
+          subTitle={pinModal.subTitle}
           onSuccess={(pin, hint) => {
             if (pinModal.callback) pinModal.callback(pin, hint);
-            else setPinModal({ ...pinModal, isOpen: false });
+            else setPinModal(prev => ({ ...prev, isOpen: false }));
           }}
-          onClose={() => setPinModal({ ...pinModal, isOpen: false })}
+          onClose={() => setPinModal(prev => ({ ...prev, isOpen: false }))}
         />
       )}
     </div>
