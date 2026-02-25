@@ -11,7 +11,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@google/genai": "^1.38.0",
+    "@google/genai": "^1.42.0",
     "@supabase/supabase-js": "^2.95.3",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
