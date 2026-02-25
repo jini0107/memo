@@ -1,9 +1,10 @@
 # WhereIsIt Project Task Checklist
 
 ## 🚀 2026-02-25 현재 진행 중
-- [🚨] Gemini 3.1 Pro 업데이트 이슈 (앱 실행 중 충돌로 winget 실패)
-- [ ] Antigravity 완전 종료 후 외부 터미널에서 업데이트 실행 필요
-- [ ] 업데이트 완료 후 Gemini 3.1 Pro 모델 연결 확인
+- [x] senior_developer_tips.txt 인코딩 오류 복구 및 내용 정리
+- [x] README.md 깨진 텍스트 수정 및 최적화
+- [x] 불필요한 Git 찌꺼기 제거 완료
+- [ ] 업데이트 완료 후 Gemini 3.1 Pro 모델 연결 확인 (대기 중)
 
 
 

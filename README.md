@@ -66,7 +66,7 @@ npm run deploy
 
 ---
 
-## � 문서 및 로그
+## 📖 문서 및 로그
 - **[UPDATE_LOG.txt](./UPDATE_LOG.txt)**: 상세 개발 히스토리
 - **[senior_developer_tips.txt](./senior_developer_tips.txt)**: 시니어 개발자의 운영 노하우
 - **[AGENTS.md](./AGENTS.md)**: 프로젝트 개발 원칙
