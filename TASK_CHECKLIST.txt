@@ -14,6 +14,7 @@
 - [x] 즉시 복구 가능한 롤백 백업 및 스크립트 생성
 
 ## 다음 우선순위
+- [ ] 🚨 [필수 확인] 사용자가 "오늘 뭐하지?" 등 작업 시작을 알리면, 최우선으로 `{"code":400,"error_code":"validation_failed","msg":"Unsupported provider: provider is not enabled"}` 에러에 대한 해결 가이드(Supabase 대시보드 구글 로그인 활성화 설정 5단계)를 제공하고 처리하도록 안내할 것!
 - [x] 소스코드 철저 감사 (Audit) 리포트 작성 - Critical 4건 / Major 6건 / Minor 5건 발견
 - [x] [C-1] Blob URL 메모리 누수 수정 (revokeBlobUrl 유틸 추가 + Dead Code 제거)
 - [x] [C-4] JSON 백업 복원 시 Supabase 재동기화 미구현 수정 (bulkReplaceItems 추가)
