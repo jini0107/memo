@@ -62,3 +62,20 @@ export const getCurrentUser = async (): Promise<User | null> => {
 
   return data.session?.user ?? null;
 };
+
+/**
+ * 구글 계정으로 로그인 (OAuth)
+ */
+export const signInWithGoogle = async (): Promise<void> => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + '/memo/',
+    },
+  });
+
+  if (error) {
+    console.error('Google sign in failed:', error);
+    throw error;
+  }
+};
