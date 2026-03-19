@@ -19,36 +19,14 @@ const readFileAsDataUrl = (file: File): Promise<string> => {
   });
 };
 
-const compressImage = (source: string, maxLength = 400, quality = 0.6): Promise<string> => {
-  return new Promise((resolve) => {
-    const image = new Image();
-    image.src = source;
-    image.onload = () => {
-      let { width, height } = image;
-
-      if (width > height && width > maxLength) {
-        height *= maxLength / width;
-        width = maxLength;
-      } else if (height >= width && height > maxLength) {
-        width *= maxLength / height;
-        height = maxLength;
-      }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const context = canvas.getContext('2d');
-
-      if (!context) {
-        resolve(source);
-        return;
-      }
-
-      context.drawImage(image, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    image.onerror = () => resolve(source);
-  });
+/**
+ * blob: 으로 시작하는 가상 URL을 안전하게 해제합니다.
+ * createObjectURL()로 생성한 URL은 반드시 이 함수로 해제해야 메모리 누수가 없습니다.
+ */
+const revokeBlobUrl = (url: string | null | undefined): void => {
+  if (url && url.startsWith('blob:')) {
+    URL.revokeObjectURL(url);
+  }
 };
 
 export const useItemActions = () => {
@@ -123,9 +101,13 @@ export const useItemActions = () => {
     }
 
     try {
-      // 1. 화면에 띄울 아주 가벼운 임시 가상 주소 생성 (Base64 변환 없음)
+      // [C-1 Fix] 같은 슬롯에 기존 blob URL이 있으면 먼저 메모리에서 해제 후 새 URL 생성
+      // 해제하지 않으면 사진을 교체할 때마다 메모리 조각이 누적되어 앱이 느려집니다.
+      revokeBlobUrl(formState.itemImages[slotIndex]);
+
+      // 화면에 띄울 가벼운 임시 가상 주소 생성 (Base64 변환 없음)
       const virtualPreviewUrl = URL.createObjectURL(file);
-      
+
       const nextImages = [...formState.itemImages];
       const nextImageFiles = [...formState.itemImageFiles];
       const nextImagePaths = [...formState.itemImagePaths];
@@ -143,7 +125,7 @@ export const useItemActions = () => {
         },
       });
 
-      // 2. AI 분석(Gemini)에만 특별히 Base64 데이터가 필요하므로 백그라운드에서 읽음
+      // AI 분석(Gemini)에만 특별히 Base64 데이터가 필요하므로 백그라운드에서 읽음
       if (slotIndex === 0) {
         const rawDataUrl = await readFileAsDataUrl(file);
         await performImageAnalysis(rawDataUrl);
@@ -157,6 +139,9 @@ export const useItemActions = () => {
   };
 
   const removeImage = (index: number) => {
+    // [C-1 Fix] 삭제 전 해당 슬롯의 blob URL을 즉시 메모리에서 해제합니다.
+    revokeBlobUrl(formState.itemImages[index]);
+
     const nextImages = [...formState.itemImages];
     const nextImageFiles = [...formState.itemImageFiles];
     const nextImagePaths = [...formState.itemImagePaths];
@@ -335,6 +320,9 @@ export const useItemActions = () => {
   };
 
   const resetForm = () => {
+    // [C-1 Fix] 폼 전체 초기화 전, 보관 중인 모든 슬롯의 blob URL을 일괄 해제합니다.
+    // 등록 취소나 저장 완료 시 메모리에 남아있던 가상 이미지 주소를 모두 정리합니다.
+    formState.itemImages.forEach(revokeBlobUrl);
     dispatch({ type: 'RESET_FORM' });
   };
 
@@ -354,30 +342,48 @@ export const useItemActions = () => {
 
     const reader = new FileReader();
     reader.onload = (loadEvent) => {
-      try {
-        const rawJson = JSON.parse(String(loadEvent.target?.result || '{}'));
-        const sanitizedData = dataService.validateAndSanitize(rawJson);
-        if (!sanitizedData) {
-          alert('올바르지 않은 백업 파일 형식입니다.');
-          return;
+      // [C-4 Fix] reader.onload 내부에서 async를 직접 쓸 수 없어 즉시 실행 async 함수로 감쌉니다.
+      void (async () => {
+        try {
+          const rawJson = JSON.parse(String(loadEvent.target?.result || '{}'));
+          const sanitizedData = dataService.validateAndSanitize(rawJson);
+          if (!sanitizedData) {
+            alert('올바르지 않은 백업 파일 형식입니다.');
+            return;
+          }
+
+          const confirmMessage = sanitizedData.items.length > 0
+            ? `총 ${sanitizedData.items.length}개의 아이템이 확인되었습니다.\n현재 데이터를 모두 지우고 백업 파일 내용으로 복원하시겠습니까?\n\n⚠️ 복원 중에는 앱을 닫지 마세요.`
+            : '백업 파일에 아이템이 없습니다. 계속하시겠습니까?';
+
+          if (!confirm(confirmMessage)) {
+            return;
+          }
+
+          // 1단계: 로컬 상태 먼저 복원 (사용자에게 빠른 피드백)
+          dispatch({ type: 'SET_ITEMS', payload: sanitizedData.items });
+          dispatch({ type: 'UPDATE_CONFIG', payload: sanitizedData.config });
+          dispatch({ type: 'TOGGLE_SETTINGS', payload: false });
+
+          // 2단계: Supabase 클라우드에 재동기화 (새로고침해도 데이터 유지)
+          if (sanitizedData.items.length > 0) {
+            console.log(`☁️ 클라우드 동기화 시작: 총 ${sanitizedData.items.length}개 아이템`);
+            await supabaseService.bulkReplaceItems(
+              sanitizedData.items,
+              (current, total) => {
+                console.log(`☁️ 클라우드 동기화 진행 중: ${current}/${total}`);
+              },
+            );
+            console.log('✅ 클라우드 동기화 완료');
+            alert(`✅ 복원 완료!\n${sanitizedData.items.length}개의 아이템이 로컬과 클라우드 모두에 저장되었습니다.`);
+          } else {
+            alert('✅ 복원 완료! (아이템 없음)');
+          }
+        } catch (error) {
+          console.error('Failed to import backup data:', error);
+          alert('백업 파일을 읽거나 클라우드에 동기화하는 중 오류가 발생했습니다.\n로컬에는 복원되었지만 클라우드 동기화에 실패했습니다.\n앱을 재시작하면 이전 데이터로 돌아갈 수 있습니다.');
         }
-
-        const confirmMessage = sanitizedData.items.length > 0
-          ? `총 ${sanitizedData.items.length}개의 아이템이 확인되었습니다.\n현재 데이터를 모두 지우고 백업 파일 내용으로 복원하시겠습니까?`
-          : '백업 파일에 아이템이 없습니다. 계속하시겠습니까?';
-
-        if (!confirm(confirmMessage)) {
-          return;
-        }
-
-        dispatch({ type: 'SET_ITEMS', payload: sanitizedData.items });
-        dispatch({ type: 'UPDATE_CONFIG', payload: sanitizedData.config });
-        dispatch({ type: 'TOGGLE_SETTINGS', payload: false });
-        alert('데이터가 복원되었습니다. 클라우드 동기화는 다음 단계 작업에서 보완할 예정입니다.');
-      } catch (error) {
-        console.error('Failed to import backup data:', error);
-        alert('백업 파일을 읽는 중 오류가 발생했습니다.');
-      }
+      })();
     };
     reader.readAsText(file);
     event.target.value = '';

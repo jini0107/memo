@@ -1,6 +1,5 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Item } from '../types';
-import { AppContext } from '../src/context/StateContext';
 import { DELETE_CONFIRM_MESSAGE } from '../constants';
 
 interface ItemDetailProps {
@@ -15,7 +14,9 @@ interface ItemDetailProps {
  * - 프리미엄 카드 레이아웃 + 정보 계층 구조
  */
 const ItemDetail: React.FC<ItemDetailProps> = ({ item, onEdit, onDelete }) => {
-  const { state, dispatch } = useContext(AppContext);
+  // [M-3 Fix] 이 컴포넌트는 props만 사용하므로 Context 구독이 필요 없습니다.
+  // 기존에 useContext(AppContext)를 호출하면 전역 state가 바뀔 때마다
+  // 불필요하게 리렌더링되어 성능이 낭비됩니다.
 
   /**
    * 상대 시간 포맷

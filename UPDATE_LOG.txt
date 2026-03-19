@@ -1,5 +1,27 @@
 === WhereIsIt 업데이트 로그 ===
 
+[2026-03-19] ⚡ M-3 ItemDetail 불필요 Context 구독 제거 (성능 개선)
+- **문제**: useContext(AppContext)를 호출하여 전역 state 변경 시마다 불필요하게 리렌더링 발생
+- **수정**: 사용하지 않는 useContext / AppContext import 전체 제거
+- **효과**: props만 구독하므로 동일 조건에서 리렌더링 횟수 감소 또는 제엄
+
+[2026-03-19] 🐛 M-1 Signed URL 7일 만료 이미지 깨짐 버그 수정
+- **버그 수정**: localStorage에 7일 만료 Signed URL을 그대로 캐시하여 다음 접속 시 이미지가 깨지던 문제 수정
+- **수정 전략**: localStorage 저장 시 imageUrls(만료 URL)는 비우고 imagePaths(클라우드 경로)만 보존
+- **자동 효과**: 앱 재시작 시 Supabase fetchItems()가 항상 새 Signed URL을 자동 발급하므로 이미지 만료 문제 일소
+
+[2026-03-19] 🐛 C-4 JSON 백업 복원 후 클라우드 동기화 누락 수정 (긴급 버그 픽스)
+- **버그 수정**: JSON 복원 시 로컬 메모리에만 반영되고 Supabase에 업로드되지 않아 새로고침 시 데이터 증발하던 버그 수정
+- **bulkReplaceItems 신규 추가**: 기존 데이터 전체 삭제 후 복원 데이터를 50개 단위 청크로 안전하게 upsert하는 함수 추가
+- **진행률 콜백**: 대량 복원 시 콘솔에 진행 상황 출력 (current/total)
+- **에러 처리 강화**: 클라우드 동기화 실패 시 사용자에게 명확한 안내 메시지 제공
+
+[2026-03-19] 🐛 C-1 Blob URL 메모리 누수 수정 (긴급 버그 픽스)
+- **버그 수정**: createObjectURL()로 생성한 임시 가상 URL을 사용 후 해제하지 않아 발생하던 메모리 누수(Memory Leak) 수정
+- **revokeBlobUrl 유틸 추가**: blob: URL 해제를 안전하게 처리하는 공통 함수 신규 작성
+- **수정 범위 3곳**: 사진 교체 시 기존 URL 해제 / 사진 삭제 시 해당 슬롯 URL 해제 / 폼 초기화 시 모든 슬롯 URL 일괄 해제
+- **Dead Code 제거**: 사용되지 않던 compressImage 함수 삭제로 번들 경량화
+
 [2026-03-19] 익명 인증, 사용자 단위 RLS, Storage 전환, App 분리 적용
 - Supabase 익명 인증 세션 초기화와 사용자 단위 RLS/Storage 정책 SQL 추가
 - Base64 이미지 저장 대신 Supabase Storage 업로드 + 서명 URL 렌더링 구조로 전환

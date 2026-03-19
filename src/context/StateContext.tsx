@@ -246,7 +246,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('whereisit_items', JSON.stringify(state.items));
+      // [M-1 Fix] localStorage에는 만료되는 imageUrls를 저장하지 않고 imagePaths(경로)만 보존합니다.
+      // 앱 재시작 시 Supabase에서 항상 새 Signed URL을 발급받아 교체하므로 이미지 깨짐이 사라집니다.
+      const itemsToCache = state.items.map((item) => ({
+        ...item,
+        imageUrls: [], // 만료 위험이 있는 Signed URL은 캐시에 저장하지 않음
+      }));
+      localStorage.setItem('whereisit_items', JSON.stringify(itemsToCache));
     } catch (error) {
       if (
         error instanceof DOMException &&

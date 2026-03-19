@@ -114,4 +114,63 @@ export const supabaseService = {
       throw error;
     }
   },
+
+  /**
+   * 백업 복원 전용: 현재 사용자의 모든 데이터를 삭제하고 복원 데이터로 일괄 교체합니다.
+   * - 기존 레코드를 먼저 전부 삭제 후, 새 데이터를 청크(chunk) 단위로 upsert합니다.
+   * - 대용량 복원 시 한 번에 너무 많은 요청이 가지 않도록 50개씩 나눠 처리합니다.
+   * @param items - 복원할 아이템 목록
+   * @param onProgress - 진행 상황 콜백 (현재 처리 수 / 전체 수)
+   */
+  async bulkReplaceItems(
+    items: Item[],
+    onProgress?: (current: number, total: number) => void,
+  ): Promise<void> {
+    const user = await ensureAuthenticatedUser();
+    if (!user) {
+      throw new Error('인증된 사용자 정보를 가져오지 못했습니다.');
+    }
+
+    // 1단계: 현재 사용자의 기존 데이터 전체 삭제
+    const { error: deleteError } = await supabase
+      .from('items')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (deleteError) {
+      console.error('Error deleting existing items during bulk restore:', deleteError);
+      throw deleteError;
+    }
+
+    if (items.length === 0) {
+      return;
+    }
+
+    // 2단계: 복원 데이터를 50개 단위 청크로 나눠 upsert (서버 부하 방지)
+    const CHUNK_SIZE = 50;
+    let processedCount = 0;
+
+    for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+      const chunk = items.slice(i, i + CHUNK_SIZE);
+
+      // 각 청크의 아이템들을 Supabase 형식으로 변환 (userId는 현재 로그인 유저로 강제 설정)
+      const payloads = await Promise.all(
+        chunk.map((item) =>
+          buildUpsertPayload({ ...item, userId: user.id }),
+        ),
+      );
+
+      const { error: upsertError } = await supabase
+        .from('items')
+        .upsert(payloads);
+
+      if (upsertError) {
+        console.error(`Error upserting chunk at index ${i}:`, upsertError);
+        throw upsertError;
+      }
+
+      processedCount += chunk.length;
+      onProgress?.(processedCount, items.length);
+    }
+  },
 };
