@@ -1,5 +1,11 @@
 === WhereIsIt 업데이트 로그 ===
 
+[2026-03-19] 🛡️ C-3 vite.config.ts 환경변수 노출 문제 수정 (보안 개선)
+- **문제 1**: define 블록에 Gemini API 키만 수동 교체하여 Supabase 환경변수 누락 또는 undefined 위험
+- **문제 2**: loadEnv(mode, '.', '')의 세 번째 인자 ''로 VITE_ 접두어 없는 시스템 변수까지 전부 로드하는 보안 위험
+- **해결**: define 블록 + loadEnv 존송성 전체 제거, Vite 표준 VITE_ 접두어 자동 노출 단일 방식으로 통일
+- **효과**: 빌드 성공 확인 (vite build 2.44s, 에러 없음)
+
 [2026-03-19] ⚡ M-3 ItemDetail 불필요 Context 구독 제거 (성능 개선)
 - **문제**: useContext(AppContext)를 호출하여 전역 state 변경 시마다 불필요하게 리렌더링 발생
 - **수정**: 사용하지 않는 useContext / AppContext import 전체 제거
