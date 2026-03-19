@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
+import AuthScreen from './components/AuthScreen';
 import ItemDetail from './components/ItemDetail';
 import ItemForm from './components/ItemForm';
 import ItemList from './components/ItemList';
@@ -6,6 +7,7 @@ import PinPadModal from './components/PinPadModal';
 import SearchBar from './components/SearchBar';
 import Settings from './components/Settings';
 import { DELETE_CONFIRM_MESSAGE } from './constants';
+import { signOut } from './services/authService';
 import { hashPin } from './services/securityService';
 import { Item } from './types';
 import { AppContext } from './src/context/StateContext';
@@ -32,6 +34,7 @@ const App: React.FC = () => {
   const { state, dispatch } = useContext(AppContext);
   const {
     aiSearchResults,
+    authUser,
     config,
     formState,
     isAdding,
@@ -93,6 +96,26 @@ const App: React.FC = () => {
   const closePinModal = () => {
     setPinModal((current) => ({ ...current, isOpen: false }));
   };
+
+  /** 로그아웃 처리: Supabase 세션 종료 후 전역 상태 초기화 */
+  const handleSignOut = async () => {
+    if (!confirm('로그아웃 하시겠습니까?')) return;
+    await signOut();
+    dispatch({ type: 'SET_AUTH_USER', payload: null });
+    dispatch({ type: 'SET_ITEMS', payload: [] });
+  };
+
+  // 미로그인 상태: 로그인/회원가입 화면 렌더링
+  if (!authUser) {
+    return (
+      <AuthScreen
+        onAuthSuccess={() => {
+          // 로그인 성공 시 페이지를 새로고침하여 StateContext 초기화 로직 재실행
+          window.location.reload();
+        }}
+      />
+    );
+  }
 
   const handleAddItem = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -242,11 +265,19 @@ const App: React.FC = () => {
               {items.length}개
             </div>
           )}
+          {/* 로그아웃 버튼 */}
+          <button
+            onClick={() => void handleSignOut()}
+            title="로그아웃"
+            className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-white/80 hover:bg-white/25 transition-all flex items-center justify-center touch-feedback"
+          >
+            <i className="fas fa-sign-out-alt text-sm" />
+          </button>
           <button
             onClick={() => dispatch({ type: 'TOGGLE_SETTINGS', payload: true })}
             className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-white/80 hover:bg-white/25 transition-all flex items-center justify-center touch-feedback"
           >
-            <i className="fas fa-cog text-sm"></i>
+            <i className="fas fa-cog text-sm" />
           </button>
         </div>
 

@@ -1,4 +1,5 @@
 import React, { createContext, Dispatch, ReactNode, useEffect, useReducer } from 'react';
+import { User } from '@supabase/supabase-js';
 import { Category, Item } from '../../types';
 import {
   CATEGORIES,
@@ -7,7 +8,7 @@ import {
   LOCATION_TYPES,
   OFFICE_LOCATIONS,
 } from '../../constants';
-import { ensureAuthenticatedUser } from '../../services/supabaseClient';
+import { getCurrentUser } from '../../services/authService';
 import { supabaseService } from '../../services/supabaseService';
 
 interface FormState {
@@ -24,6 +25,8 @@ interface FormState {
 
 interface AppState {
   items: Item[];
+  /** 현재 로그인된 사용자 정보. null이면 미로그인 상태. */
+  authUser: User | null;
   searchTerm: string;
   sortOption: 'latest' | 'name' | 'category';
   viewMode: 'card' | 'table';
@@ -65,6 +68,7 @@ const createInitialFormState = (): FormState => ({
 
 const initialState: AppState = {
   items: [],
+  authUser: null, // 초기에는 미로그인 상태
   searchTerm: '',
   sortOption: 'latest',
   viewMode: 'card',
@@ -92,6 +96,7 @@ const initialState: AppState = {
 
 type Action =
   | { type: 'SET_ITEMS'; payload: Item[] }
+  | { type: 'SET_AUTH_USER'; payload: User | null }
   | { type: 'SET_SEARCH_TERM'; payload: string }
   | { type: 'SET_SORT_OPTION'; payload: 'latest' | 'name' | 'category' }
   | { type: 'SET_VIEW_MODE'; payload: 'card' | 'table' }
@@ -116,6 +121,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case 'INITIALIZE_STATE':
       return { ...state, ...action.payload };
+    case 'SET_AUTH_USER':
+      return { ...state, authUser: action.payload };
     case 'SET_ITEMS':
       return { ...state, items: action.payload };
     case 'SET_SEARCH_TERM':
@@ -202,6 +209,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initializeData = async () => {
       try {
+        // 1단계: localStorage 캐시 즉시 표시 (빠른 초기 렌더링)
         const savedItems = localStorage.getItem('whereisit_items');
         const savedConfig = {
           locTypes: JSON.parse(localStorage.getItem('config_loc_types') || 'null'),
@@ -233,9 +241,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
         dispatch({ type: 'INITIALIZE_STATE', payload });
 
-        await ensureAuthenticatedUser();
-        const cloudItems = await supabaseService.fetchItems();
-        dispatch({ type: 'SET_ITEMS', payload: cloudItems });
+        // 2단계: 기존 로그인 세션 확인 (이메일 인증 방식)
+        const user = await getCurrentUser();
+        if (user) {
+          dispatch({ type: 'SET_AUTH_USER', payload: user });
+          // 3단계: 로그인된 경우에만 클라우드에서 최신 아이템 fetch
+          const cloudItems = await supabaseService.fetchItems();
+          dispatch({ type: 'SET_ITEMS', payload: cloudItems });
+        }
       } catch (error) {
         console.error('Failed to initialize application state:', error);
       }
