@@ -96,11 +96,11 @@ const ItemForm: React.FC<ItemFormProps> = ({
               className="aspect-square rounded-2xl bg-surface-50 border-2 border-dashed border-surface-200 flex flex-col items-center justify-center overflow-hidden relative group transition-all hover:border-primary-300"
             >
               {/* ───── 숨겨진 Input 요소들 (카메라 / 갤러리) ───── */}
-              {/* 카메라 전용 input: capture="environment" → 후면 카메라 바로 실행 */}
+              {/* 카메라 전용 input: 안드로이드/아이폰 디바이스 호환성을 위한 속성 병용 적용 */}
               <input
                 ref={(el) => { cameraRefs.current[idx] = el; }}
                 type="file"
-                accept="image/*"
+                accept="image/*;capture=camera"
                 capture="environment"
                 className="hidden"
                 onChange={(e) => {
