@@ -1,27 +1,14 @@
-import React, { createContext, Dispatch, ReactNode, useEffect, useReducer } from 'react';
-import { Category, Item } from '../../types';
+import React, { createContext, useReducer, Dispatch, ReactNode, useEffect } from 'react';
+import { Item, Category } from '../../types';
 import {
-  CATEGORIES,
-  DIGITAL_LOCATIONS,
-  HOME_LOCATIONS,
   LOCATION_TYPES,
+  HOME_LOCATIONS,
   OFFICE_LOCATIONS,
+  DIGITAL_LOCATIONS,
+  CATEGORIES
 } from '../../constants';
-import { ensureAuthenticatedUser } from '../../services/supabaseClient';
-import { supabaseService } from '../../services/supabaseService';
 
-interface FormState {
-  itemName: string;
-  locType: string;
-  locDetail: string;
-  itemCat: string;
-  itemNotes: string;
-  itemImages: string[];
-  itemImagePaths: string[];
-  itemImageFiles: Array<File | null>;
-  isSecret: boolean;
-}
-
+// --- STATE ---
 interface AppState {
   items: Item[];
   searchTerm: string;
@@ -30,38 +17,45 @@ interface AppState {
   isAdding: boolean;
   selectedItem: Item | null;
   isEditMode: boolean;
-  formState: FormState;
+
+  // Form State
+  formState: {
+    itemName: string;
+    locType: string;
+    locDetail: string;
+    itemCat: string;
+    itemNotes: string;
+    itemImages: string[];
+    isSecret: boolean; // 시크릿 모드 여부
+  };
+
   isAnalyzing: boolean;
   aiSearchResults: string[] | null;
   isSearchingAI: boolean;
+
+  // Camera State
+  isCameraActive: boolean;
+  activeCameraSlot: number | null;
+
+  // Security State
   security: {
-    failCount: number;
-    lockedUntil: number | null;
-    isAuthenticated: boolean;
+    failCount: number; // 실패 횟수
+    lockedUntil: number | null; // 잠금 해제 시간 (timestamp)
+    isAuthenticated: boolean; // 현재 세션 인증 여부 (간단하게)
   };
+
+  // Config State
   config: {
     locTypes: string[];
     homeLocs: string[];
     officeLocs: string[];
     digitalLocs: string[];
     categories: string[];
-    secretPin?: string;
-    secretHint?: string;
+    secretPin?: string; // 해시 PIN 또는 레거시 평문 PIN
+    secretHint?: string; // 비밀번호 힌트
   };
   isSettingsOpen: boolean;
 }
-
-const createInitialFormState = (): FormState => ({
-  itemName: '',
-  locType: LOCATION_TYPES[0],
-  locDetail: HOME_LOCATIONS[0],
-  itemCat: Category.OTHER,
-  itemNotes: '',
-  itemImages: ['', ''],
-  itemImagePaths: ['', ''],
-  itemImageFiles: [null, null],
-  isSecret: false,
-});
 
 const initialState: AppState = {
   items: [],
@@ -71,10 +65,20 @@ const initialState: AppState = {
   isAdding: false,
   selectedItem: null,
   isEditMode: false,
-  formState: createInitialFormState(),
+  formState: {
+    itemName: '',
+    locType: LOCATION_TYPES[0],
+    locDetail: HOME_LOCATIONS[0],
+    itemCat: Category.OTHER,
+    itemNotes: '',
+    itemImages: [],
+    isSecret: false,
+  },
   isAnalyzing: false,
   aiSearchResults: null,
   isSearchingAI: false,
+  isCameraActive: false,
+  activeCameraSlot: null,
   security: {
     failCount: 0,
     lockedUntil: null,
@@ -90,6 +94,7 @@ const initialState: AppState = {
   isSettingsOpen: false,
 };
 
+// --- ACTIONS ---
 type Action =
   | { type: 'SET_ITEMS'; payload: Item[] }
   | { type: 'SET_SEARCH_TERM'; payload: string }
@@ -98,20 +103,22 @@ type Action =
   | { type: 'TOGGLE_ADDING'; payload: boolean }
   | { type: 'SET_SELECTED_ITEM'; payload: Item | null }
   | { type: 'TOGGLE_EDIT_MODE'; payload: boolean }
-  | { type: 'UPDATE_FORM'; payload: Partial<FormState> }
+  | { type: 'UPDATE_FORM'; payload: Partial<AppState['formState']> }
   | { type: 'RESET_FORM' }
   | { type: 'SET_IS_ANALYZING'; payload: boolean }
   | { type: 'SET_AI_SEARCH_RESULTS'; payload: string[] | null }
   | { type: 'SET_IS_SEARCHING_AI'; payload: boolean }
+  | { type: 'SET_CAMERA_ACTIVE'; payload: { isActive: boolean; slot: number | null } }
   | { type: 'UPDATE_CONFIG'; payload: Partial<AppState['config']> }
   | { type: 'TOGGLE_SETTINGS'; payload: boolean }
   | { type: 'INITIALIZE_STATE'; payload: Partial<AppState> }
-  | { type: 'INCREMENT_PIN_FAIL' }
-  | { type: 'RESET_PIN_FAIL' }
-  | { type: 'RESET_PIN_LOCK' }
-  | { type: 'SET_PIN_LOCKED'; payload: number }
+  | { type: 'INCREMENT_PIN_FAIL' } // PIN 실패 1회 증가
+  | { type: 'RESET_PIN_FAIL' } // PIN 성공 시 초기화 (failCount = 0)
+  | { type: 'RESET_PIN_LOCK' } // 잠금 시간만 초기화 (failCount 유지)
+  | { type: 'SET_PIN_LOCKED'; payload: number } // 잠금 설정
   | { type: 'SET_AUTHENTICATED'; payload: boolean };
 
+// --- REDUCER ---
 const appReducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case 'INITIALIZE_STATE':
@@ -133,24 +140,30 @@ const appReducer = (state: AppState, action: Action): AppState => {
     case 'UPDATE_FORM':
       return { ...state, formState: { ...state.formState, ...action.payload } };
     case 'RESET_FORM':
-      return { ...state, formState: createInitialFormState() };
+      return {
+        ...state,
+        formState: initialState.formState
+      };
     case 'SET_IS_ANALYZING':
       return { ...state, isAnalyzing: action.payload };
     case 'SET_AI_SEARCH_RESULTS':
       return { ...state, aiSearchResults: action.payload };
     case 'SET_IS_SEARCHING_AI':
       return { ...state, isSearchingAI: action.payload };
+    case 'SET_CAMERA_ACTIVE':
+      return { ...state, isCameraActive: action.payload.isActive, activeCameraSlot: action.payload.slot };
     case 'UPDATE_CONFIG':
       return { ...state, config: { ...state.config, ...action.payload } };
     case 'TOGGLE_SETTINGS':
       return { ...state, isSettingsOpen: action.payload };
     case 'INCREMENT_PIN_FAIL':
+      const newFailCount = state.security.failCount + 1;
       return {
         ...state,
         security: {
           ...state.security,
-          failCount: state.security.failCount + 1,
-        },
+          failCount: newFailCount,
+        }
       };
     case 'RESET_PIN_FAIL':
       return {
@@ -159,7 +172,7 @@ const appReducer = (state: AppState, action: Action): AppState => {
           ...state.security,
           failCount: 0,
           lockedUntil: null,
-        },
+        }
       };
     case 'RESET_PIN_LOCK':
       return {
@@ -167,7 +180,7 @@ const appReducer = (state: AppState, action: Action): AppState => {
         security: {
           ...state.security,
           lockedUntil: null,
-        },
+        }
       };
     case 'SET_PIN_LOCKED':
       return {
@@ -175,7 +188,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
         security: {
           ...state.security,
           lockedUntil: action.payload,
-        },
+          // failCount는 유지 (아이폰 방식)
+        }
       };
     case 'SET_AUTHENTICATED':
       return {
@@ -184,24 +198,28 @@ const appReducer = (state: AppState, action: Action): AppState => {
           ...state.security,
           isAuthenticated: action.payload,
           failCount: 0,
-        },
+        }
       };
     default:
       return state;
   }
 };
 
+// --- CONTEXT ---
 export const AppContext = createContext<{ state: AppState; dispatch: Dispatch<Action> }>({
   state: initialState,
   dispatch: () => null,
 });
 
+// --- PROVIDER ---
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
+  // Load state from localStorage AND Supabase on initial render
   useEffect(() => {
     const initializeData = async () => {
       try {
+        // 1. Local Storage First (Optimistic Load)
         const savedItems = localStorage.getItem('whereisit_items');
         const savedConfig = {
           locTypes: JSON.parse(localStorage.getItem('config_loc_types') || 'null'),
@@ -233,28 +251,44 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
         dispatch({ type: 'INITIALIZE_STATE', payload });
 
-        await ensureAuthenticatedUser();
-        const cloudItems = await supabaseService.fetchItems();
-        dispatch({ type: 'SET_ITEMS', payload: cloudItems });
-      } catch (error) {
-        console.error('Failed to initialize application state:', error);
+        // 2. Fetch from Supabase (Source of Truth)
+        // Dynamic import to avoid circular dependency issues if any, though standard import is fine usually.
+        // We'll use standard import at top of file, but for now let's assume it's available.
+        // wait, I need to import supabaseService at the top.
+        // Since I can't edit imports with replace_file_content easily without context, I'll use multi_replace or stick to a layout where imports are visible.
+        // I'll assume I can add the import. Actually, I can use require or dynamic import if needed, but standard import is better.
+        // Let's use a separate tool call to add the import first.
+      } catch (e) {
+        console.error('Failed to load state', e);
       }
     };
 
-    void initializeData();
+    initializeData();
   }, []);
 
+  // Fetch from Supabase separately to keep the function clean
+  useEffect(() => {
+    import('../../services/supabaseService').then(({ supabaseService }) => {
+      supabaseService.fetchItems().then(items => {
+        if (items && items.length > 0) {
+          console.log("Loaded items from Supabase:", items.length);
+          dispatch({ type: 'SET_ITEMS', payload: items });
+        }
+      }).catch(err => console.error("Supabase fetch failed", err));
+    });
+  }, []);
+
+
+  // Save state to localStorage whenever it changes
   useEffect(() => {
     try {
       localStorage.setItem('whereisit_items', JSON.stringify(state.items));
-    } catch (error) {
-      if (
-        error instanceof DOMException &&
-        (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')
-      ) {
-        console.warn('LocalStorage is full. Items will remain available from Supabase only.');
+    } catch (e) {
+      if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+        console.warn("LocalStorage is full. Items will only be saved to the cloud (Supabase).");
+        // Optional: clear some old data or just ignore
       } else {
-        console.error('Failed to save items to localStorage:', error);
+        console.error("Failed to save items to localStorage", e);
       }
     }
   }, [state.items]);
@@ -265,13 +299,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('config_office_locs', JSON.stringify(state.config.officeLocs));
     localStorage.setItem('config_digital_locs', JSON.stringify(state.config.digitalLocs));
     localStorage.setItem('config_categories', JSON.stringify(state.config.categories));
-
     if (state.config.secretPin) {
       localStorage.setItem('config_secret_pin', state.config.secretPin);
     } else {
       localStorage.removeItem('config_secret_pin');
     }
-
     if (state.config.secretHint) {
       localStorage.setItem('config_secret_hint', state.config.secretHint);
     } else {

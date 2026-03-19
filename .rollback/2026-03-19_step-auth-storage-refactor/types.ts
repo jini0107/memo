@@ -1,20 +1,19 @@
+
 export interface Location {
   id: string;
-  name: string; // 예: 안방, 창고, 클라우드
-  parentId?: string; // 계층 구조용 부모 ID
+  name: string; // e.g., "안방", "창고", "클라우드"
+  parentId?: string; // 계층 구조 (ex: 안방 > 세 번째 서랍)
 }
 
 export interface Item {
   id: string;
   name: string;
-  locationPath: string; // 예: "안방 > 서랍"
+  locationPath: string; // "안방 > 세 번째 서랍" 처럼 표시용
   category: string;
-  imageUrls: string[]; // UI 렌더링용 서명 URL 또는 레거시 URL
-  imagePaths?: string[]; // Supabase Storage 내부 경로
+  imageUrls: string[]; // 최대 2장까지 저장
   notes: string[];
   updatedAt: number;
-  userId?: string;
-  isSecret?: boolean;
+  isSecret?: boolean; // 보안 모드 (PIN 필요)
 }
 
 export enum Category {

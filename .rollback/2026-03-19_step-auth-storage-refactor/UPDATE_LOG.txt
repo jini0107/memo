@@ -1,11 +1,5 @@
 === WhereIsIt 업데이트 로그 ===
 
-[2026-03-19] 익명 인증, 사용자 단위 RLS, Storage 전환, App 분리 적용
-- Supabase 익명 인증 세션 초기화와 사용자 단위 RLS/Storage 정책 SQL 추가
-- Base64 이미지 저장 대신 Supabase Storage 업로드 + 서명 URL 렌더링 구조로 전환
-- `useItemActions`, `useFilteredItems` 훅을 추가해 `App.tsx`를 화면 조립 중심으로 단순화
-- `.rollback/2026-03-19_step-auth-storage-refactor/rollback.ps1` 복원 스크립트 추가
-
 [2026-03-19] 시크릿 데이터 정합성 및 PIN 보안 저장 개선
 - `isSecret`를 Supabase CRUD와 백업/복원 포맷에 반영
 - PIN 검증을 해시 기반으로 전환하고, 기존 평문 PIN은 검증 시 자동 마이그레이션되도록 보완

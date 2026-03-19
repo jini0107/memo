@@ -62,10 +62,8 @@ export const dataService = {
                     locationPath: item.locationPath || '위치 미지정',
                     category: item.category || '기타',
                     imageUrls: Array.isArray(item.imageUrls) ? item.imageUrls : [],
-                    imagePaths: Array.isArray(item.imagePaths) ? item.imagePaths : [],
                     notes: Array.isArray(item.notes) ? item.notes : [],
                     updatedAt: typeof item.updatedAt === 'number' ? item.updatedAt : Date.now(),
-                    userId: typeof item.userId === 'string' ? item.userId : undefined,
                     isSecret: Boolean(item.isSecret)
                 };
             });
